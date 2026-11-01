@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maxs 3d Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f0e0c; --surface: #1a1916; --surface2: #242220; --border: #2e2c28;
+      --accent: #e8c97e; --text: #f0ece4; --muted: #7a7468;
+      --danger: #c0614a; --success: #6a9e72; --radius: 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1000; opacity: 0.6;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    }
+    header { border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 70px; position: sticky; top: 0; background: rgba(15,14,12,0.92); backdrop-filter: blur(12px); z-index: 100; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; letter-spacing: -0.02em; color: var(--accent); }
+    .logo span { color: var(--text); }
+    .my-name-tag { display: flex; align-items: center; gap: 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 0.85rem; cursor: pointer; transition: border-color 0.15s; }
+    .my-name-tag:hover { border-color: var(--accent); }
+    .my-name-tag .name-label { color: var(--muted); font-size: 0.75rem; }
+    .my-name-tag .name-val { color: var(--accent); font-weight: 500; }
+    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500; transition: all 0.18s ease; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+    .btn-accent { background: var(--accent); color: #0f0e0c; font-weight: 600; }
+    .btn-accent:hover { background: #f0d590; transform: translateY(-1px); }
+    .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: white; }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+    .btn-full { width: 100%; justify-content: center; }
+    main { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
+    .hero { text-align: center; padding: 3rem 0 4rem; }
+    .hero-tag { display: inline-block; background: rgba(232,201,126,0.1); border: 1px solid rgba(232,201,126,0.25); color: var(--accent); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.3rem 0.9rem; border-radius: 100px; margin-bottom: 1.25rem; }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 1rem; }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero p { color: var(--muted); font-size: 1.05rem; max-width: 500px; margin: 0 auto; line-height: 1.7; }
+    .stats-bar { display: flex; justify-content: center; gap: 3rem; padding: 1.5rem 2rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
+    .stat { text-align: center; }
+    .stat-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.1rem; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+    .section-header h2 { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; }
+    .filter-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tab { padding: 0.35rem 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-size: 0.8rem; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+    .tab.active, .tab:hover { background: var(--surface); color: var(--text); border-color: rgba(232,201,126,0.3); }
+    .tab.active { color: var(--accent); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s, transform 0.2s; animation: fadeUp 0.4s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .card:hover { border-color: rgba(232,201,126,0.3); transform: translateY(-2px); }
+    .card-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--surface2); display: block; }
+    .card-img-placeholder { width: 100%; aspect-ratio: 16/9; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+    .card-body { padding: 1.25rem; }
+    .card-category { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 500; margin-bottom: 0.4rem; }
+    .card-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 0.4rem; line-height: 1.2; }
+    .card-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.6; margin-bottom: 1rem; }
+    .card-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500; }
+    .badge-available { background: rgba(106,158,114,0.15); color: var(--success); }
+    .badge-taken { background: rgba(192,97,74,0.15); color: var(--danger); }
+    .badge-price { background: rgba(232,201,126,0.1); color: var(--accent); }
+    .registrations { border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 0.75rem; }
+    .reg-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; }
+    .reg-others { font-size: 0.8rem; color: var(--muted); padding: 0.4rem 0.7rem; background: var(--surface2); border-radius: 6px; text-align: center; }
+    .my-reg-box { margin-top: 0.75rem; background: rgba(232,201,126,0.06); border: 1px solid rgba(232,201,126,0.2); border-radius: 8px; padding: 0.85rem; }
+    .my-reg-box .my-reg-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 0.5rem; }
+    .my-reg-row { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; margin-bottom: 0.2rem; }
+    .my-reg-row .muted { color: var(--muted); font-size: 0.75rem; }
+    .cancel-link { margin-top: 0.6rem; font-size: 0.78rem; color: var(--danger); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 0; display: inline-block; }
+    .cancel-link:hover { text-decoration: underline; }
+    .reserve-form { margin-top: 0.75rem; border-top: 1px solid var(--border); padding-top: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .reserve-form label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
+    .reserve-form select, .reserve-form textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 0.75rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.875rem; outline: none; transition: border-color 0.18s; }
+    .reserve-form select:focus, .reserve-form textarea:focus { border-color: var(--accent); }
+    .reserve-form select option { background: var(--surface2); }
+    .reserve-form textarea { resize: none; min-height: 60px; }
+    .reserve-form textarea::placeholder { color: var(--muted); }
+    .reserve-form-err { font-size: 0.78rem; color: var(--danger); display: none; }
+    .reserve-form-err.visible { display: block; }
+    .reserve-form-btns { display: flex; gap: 0.5rem; }
+    .reserve-form-btns button { flex: 1; }
+    .reserve-btn-wrap { margin-top: 0.75rem; }
+    .empty { text-align: center; padding: 5rem 2rem; color: var(--muted); }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+    .empty h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text); margin-bottom: 0.5rem; }
+    .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 500; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.1rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem; animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fadeOut { to { opacity: 0; transform: translateX(20px); } }
+    .toast.success { border-color: rgba(106,158,114,0.4); }
+    .toast.error { border-color: rgba(192,97,74,0.4); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay.visible { opacity: 1; pointer-events: all; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; width: 100%; max-width: 400px; transform: translateY(20px); transition: transform 0.2s; }
+    .modal-overlay.visible .modal { transform: translateY(0); }
+    .modal h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 0.4rem; }
+    .modal .modal-subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.25rem; }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem; }
+    .modal input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.18s; }
+    .modal input:focus { border-color: var(--accent); }
+    .modal input::placeholder { color: var(--muted); }
+    .modal p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6; }
+    @media (max-width: 600px) { .stats-bar { gap: 1.5rem; } }
+    .fil-picker { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .fpick-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.65rem; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; transition: all 0.15s; }
+    .fpick-btn:hover { border-color: var(--accent); color: var(--text); }
+    .fpick-btn.selected { border-color: var(--accent); background: rgba(232,201,126,0.12); color: var(--text); }
+    .fpick-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; position: relative; }
+    .fpick-dot.dual::before, .fpick-dot.dual::after { content: ''; position: absolute; top: 0; width: 50%; height: 100%; }
+    .fpick-dot.dual::before { left: 0; background: var(--c1); border-radius: 50% 0 0 50%; }
+    .fpick-dot.dual::after { right: 0; background: var(--c2); border-radius: 0 50% 50% 0; }
+    .cat-section { grid-column: 1 / -1; margin-top: 1rem; }
+    .cat-section:first-child { margin-top: 0; }
+    .cat-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+    .cat-label { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .cat-line { flex: 1; height: 1px; background: var(--border); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">Maxs<span>3d</span><span>Shop</span></div>
+  <div class="my-name-tag" onclick="openNameModal(false)" title="Namen ändern">
+    <span class="name-label">Mein Name:</span>
+    <span class="name-val" id="headerName">–</span>
+    <span style="color:var(--muted);font-size:0.75rem;">✎</span>
+  </div>
+</header>
+<main>
+  <div class="hero">
+    <div class="hero-tag">Hallo</div>
+    <h1>Schön dass du den Weg<br><em>hier her gefunden hast!</em></h1>
+    <p></p>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Artikel</div></div>
+    <div class="stat"><div class="stat-value" id="statAvail">0</div><div class="stat-label">Verfügbar</div></div>
+  </div>
+  <div class="section-header">
+    <h2>Alle Artikel</h2>
+    <div class="filter-tabs">
+      <button class="tab active" onclick="setFilter('all', this)">Alle</button>
+      <button class="tab" onclick="setFilter('available', this)">Verfügbar</button>
+      <button class="tab" onclick="setFilter('taken', this)">Belegt</button>
+    </div>
+  </div>
+  <div class="grid" id="itemGrid"></div>
+</main>
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-overlay" id="nameModal">
+  <div class="modal">
+    <h3>👤 Dein Name</h3>
+    <div class="modal-subtitle" id="nameModalDesc">Gib deinen Namen ein. Er wird gespeichert, damit du deine Reservierungen wiederfindest.</div>
+    <input type="text" id="nameInput" placeholder="Dein Name…" maxlength="60" onkeydown="if(event.key==='Enter')saveName()" />
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="nameCancelBtn" onclick="closeModal('nameModal')">Abbrechen</button>
+      <button class="btn btn-accent" onclick="saveName()">Speichern</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="cancelModal">
+  <div class="modal">
+    <h3>Reservierung stornieren?</h3>
+    <p>Deine Reservierung wird unwiderruflich entfernt.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('cancelModal')">Behalten</button>
+      <button class="btn btn-danger" onclick="confirmCancel()">Stornieren</button>
+    </div>
+  </div>
+</div>
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const FIREBASE_URL = "https://dshop-23436-default-rtdb.europe-west1.firebasedatabase.app";
+const API_KEY      = "DEIN_WEB_API_KEY_HIER";   // Firebase → Projekteinstellungen → Web-API-Schlüssel
+const DB = FIREBASE_URL.replace(/\/+$/, '');
+
+// ── STATE ───────────────────────────────────────────────
+let items = [], filaments = [];
+let takenMap = {};          // { itemId: { uid: true } }  – nur Anzahl, keine Namen
+let myRegs = {};            // { itemId: { name, filament, delivery } } – nur eigene
+let myUid = null;
+let currentFilter = 'all';
+let myName = localStorage.getItem('shopMyName') || '';
+let pendingReserveId = null, cancellingItemId = null;
+let firstLoad = true;
+let auth = null;
+
+// ── AUTH (anonym, pro Gerät/Browser) ─────────────────────
+function readStoredAuth() {
+  try { return JSON.parse(localStorage.getItem('shopAuth') || 'null'); } catch (e) { return null; }
+}
+
+async function anonSignIn() {
+  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ returnSecureToken: true })
+  });
+  const d = await res.json();
+  if (!res.ok) { const e = new Error((d.error && d.error.message) || 'AUTH_FAILED'); e.status = res.status; throw e; }
+  return { idToken: d.idToken, refreshToken: d.refreshToken, uid: d.localId, expiresAt: Date.now() + (parseInt(d.expiresIn, 10) - 60) * 1000 };
+}
+
+async function refreshAuth(a) {
+  const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${API_KEY}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(a.refreshToken)}`
+  });
+  const d = await res.json();
+  if (!res.ok) { const e = new Error('REFRESH_FAILED'); e.status = res.status; throw e; }
+  return { idToken: d.id_token, refreshToken: d.refresh_token, uid: d.user_id, expiresAt: Date.now() + (parseInt(d.expires_in, 10) - 60) * 1000 };
+}
+
+let authPromise = null;
+function getAuth() {
+  if (auth && Date.now() < auth.expiresAt) return Promise.resolve(auth);
+  if (!authPromise) {
+    authPromise = (async () => {
+      if (!auth) auth = readStoredAuth();
+      if (auth && Date.now() < auth.expiresAt) return auth;
+      if (auth && auth.refreshToken) {
+        try { auth = await refreshAuth(auth); }
+        catch (e) {
+          // Nur bei ungültigem Token ein neues Konto anlegen – nicht bei Netzwerkfehlern
+          if (e.status >= 400 && e.status < 500) auth = await anonSignIn(); else throw e;
+        }
+      } else {
+        auth = await anonSignIn();
+      }
+      localStorage.setItem('shopAuth', JSON.stringify(auth));
+      return auth;
+    })().finally(() => { authPromise = null; });
+  }
+  return authPromise;
+}
+
+async function db(path, method = 'GET', body) {
+  const a = await getAuth();
+  const opts = { method };
+  if (body !== undefined) { opts.headers = { 'Content-Type': 'application/json' }; opts.body = JSON.stringify(body); }
+  const res = await fetch(`${DB}/${path}.json?auth=${encodeURIComponent(a.idToken)}`, opts);
+  if (!res.ok) { const e = new Error('DB ' + res.status); e.status = res.status; throw e; }
+  return res.json();
+}
+
+// ── DATA ────────────────────────────────────────────────
+function toList(v) { return v == null ? [] : (Array.isArray(v) ? v : Object.values(v)).filter(Boolean); }
+function toItems(v) {
+  if (v == null) return [];
+  const entries = Array.isArray(v) ? v.map((x, i) => [String(i), x]) : Object.entries(v);
+  return entries.filter(([, x]) => x && typeof x === 'object').map(([k, x]) => ({ ...x, id: String(x.id !== undefined ? x.id : k) }));
+}
+function takenCount(item) { return takenMap[item.id] ? Object.keys(takenMap[item.id]).length : 0; }
+function isMine(item) { return !!(myUid && takenMap[item.id] && takenMap[item.id][myUid]); }
+
+async function loadAll() {
+  const grid = document.getElementById('itemGrid');
+  if (API_KEY.startsWith('DEIN')) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔑</div><h3>Einrichtung unvollständig</h3><p>Bitte den Web-API-Key in index.html eintragen.</p></div>`;
+    return;
+  }
+  if (firstLoad) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">⟳</div><p style="margin-top:1rem;color:var(--muted)">Artikel werden geladen…</p></div>`;
+  }
+  try {
+    const a = await getAuth();
+    myUid = a.uid;
+    const [it, fil, tk] = await Promise.all([db('items'), db('filaments'), db('taken')]);
+    items = toItems(it);
+    filaments = toList(fil);
+    takenMap = tk || {};
+    const mine = items.filter(isMine);
+    const recs = await Promise.all(mine.map(i => db(`reservations/${i.id}/${myUid}`).catch(() => null)));
+    myRegs = {};
+    mine.forEach((i, n) => { if (recs[n]) myRegs[i.id] = recs[n]; });
+    firstLoad = false;
+  } catch (e) {
+    console.error(e);
+    if (e && e.message && /OPERATION_NOT_ALLOWED|ADMIN_ONLY/.test(e.message)) {
+      toast('Anonyme Anmeldung ist in Firebase nicht aktiviert.', 'error');
+    } else {
+      toast('Laden fehlgeschlagen.', 'error');
+    }
+    if (firstLoad) items = [];
+  }
+  render(); updateStats();
+}
+
+setInterval(() => {
+  // Nicht neu laden, solange jemand gerade ein Reservierungsformular ausfüllt
+  const formOpen = [...document.querySelectorAll('.reserve-form')].some(f => f.style.display === 'flex');
+  if (!formOpen) loadAll();
+}, 30000);
+
+// ── NAME ────────────────────────────────────────────────
+function updateHeaderName() { document.getElementById('headerName').textContent = myName || '–'; }
+
+function openNameModal(isFirst) {
+  document.getElementById('nameInput').value = myName;
+  document.getElementById('nameModalDesc').textContent = isFirst
+    ? 'Gib deinen Namen ein damit du deine Reservierungen wiederfindest.'
+    : 'Namen ändern – bestehende Reservierungen bleiben unter dem alten Namen.';
+  document.getElementById('nameCancelBtn').style.display = isFirst ? 'none' : '';
+  openModal('nameModal');
+  setTimeout(() => document.getElementById('nameInput').focus(), 200);
+}
+
+function saveName() {
+  const val = document.getElementById('nameInput').value.trim();
+  if (!val) { toast('Bitte einen Namen eingeben.', 'error'); return; }
+  myName = val.slice(0, 60);
+  localStorage.setItem('shopMyName', myName);
+  updateHeaderName();
+  closeModal('nameModal');
+  render();
+  toast(`Name gespeichert: ${myName} ✓`, 'success');
+  if (pendingReserveId) { showInlineForm(pendingReserveId); pendingReserveId = null; }
+}
+
+// ── RENDER ──────────────────────────────────────────────
+function render() {
+  const grid = document.getElementById('itemGrid');
+  if (API_KEY.startsWith('DEIN')) return;
+  let filtered = items.filter(i => !i.locked);
+  if (currentFilter === 'available') filtered = filtered.filter(i => takenCount(i) < i.slots);
+  if (currentFilter === 'taken')     filtered = filtered.filter(i => takenCount(i) >= i.slots);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📭</div><h3>Keine Artikel gefunden</h3><p>Versuche einen anderen Filter.</p></div>`;
+    return;
+  }
+
+  const groups = {};
+  filtered.forEach(item => {
+    const cat = (item.category || 'Sonstiges').trim();
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(item);
+  });
+  const sortedCats = Object.keys(groups).sort((a, b) => a.localeCompare(b, 'de'));
+
+  let html = '';
+  sortedCats.forEach(cat => {
+    html += `<div class="cat-section" style="grid-column:1/-1"><div class="cat-header"><span class="cat-label">${escHtml(cat)}</span><div class="cat-line"></div></div></div>`;
+    groups[cat].forEach(item => { html += cardHTML(item); });
+  });
+
+  grid.innerHTML = html;
+  grid.querySelectorAll('.card').forEach((c, i) => c.style.animationDelay = `${i * 0.06}s`);
+  filtered.forEach(item => {
+    const picker = document.getElementById(`fil_${item.id}`);
+    if (!picker) return;
+    picker.innerHTML = filaments.map(f => {
+      const val = f.color + ' \u2013 ' + f.material;
+      const dot = f.hex2
+        ? `<span class="fpick-dot dual" style="--c1:${escHtml(f.hex||'#888')};--c2:${escHtml(f.hex2)}"></span>`
+        : `<span class="fpick-dot" style="background:${escHtml(f.hex||'#888')}"></span>`;
+      return `<button class="fpick-btn" onclick="selectFilament('${escHtml(item.id)}', this.dataset.val, this)" data-val="${escHtml(val)}">${dot}<span>${escHtml(val)}</span></button>`;
+    }).join('');
+  });
+}
+
+function cardHTML(item) {
+  const count = takenCount(item);
+  const taken = count >= item.slots;
+  const mine = isMine(item);
+  const myReg = myRegs[item.id];
+  const othersCount = count - (mine ? 1 : 0);
+
+  const imgHTML = item.image
+    ? `<img class="card-img" src="${escHtml(item.image)}" alt="${escHtml(item.title)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="card-img-placeholder" style="display:none">${escHtml(item.emoji||'📦')}</div>`
+    : `<div class="card-img-placeholder">${escHtml(item.emoji||'📦')}</div>`;
+
+  let regsHTML = '';
+  if (count > 0) {
+    let inner = '';
+    if (mine) {
+      inner += `<div class="my-reg-box">
+        <div class="my-reg-title">✓ Deine Reservierung</div>
+        <div class="my-reg-row">🎨 <span>${escHtml((myReg && myReg.filament) || '–')}</span></div>
+        <div class="my-reg-row">📦 <span class="muted">${escHtml((myReg && myReg.delivery) || '–')}</span></div>
+        <button class="cancel-link" onclick="askCancel('${escHtml(item.id)}')">✕ Stornieren</button>
+      </div>`;
+    }
+    if (othersCount > 0) {
+      inner += `<div class="reg-others" style="margin-top:0.5rem">+ ${othersCount} weitere${othersCount > 1 ? ' Personen' : ' Person'} eingetragen</div>`;
+    }
+    regsHTML = `<div class="registrations"><div class="reg-label">Reservierungen (${count}/${item.slots})</div>${inner}</div>`;
+  }
+
+  let actionHTML = '';
+  if (!mine) {
+    if (!taken) {
+      actionHTML = `
+        <div class="reserve-btn-wrap" id="btnWrap_${escHtml(item.id)}">
+          <button class="btn btn-accent btn-full btn-sm" onclick="showInlineForm('${escHtml(item.id)}')">Jetzt reservieren</button>
+        </div>
+        <div class="reserve-form" id="form_${escHtml(item.id)}" style="display:none">
+          <label>Filament</label>
+          <div class="fil-picker" id="fil_${escHtml(item.id)}"></div>
+          <input type="hidden" id="filval_${escHtml(item.id)}" value="" />
+          <label>Wie möchtest du es erhalten?<br>Hier kannst du Wünsche/Sonstiges abgeben.</label>
+          <textarea id="del_${escHtml(item.id)}" maxlength="500" placeholder="z.B. Abholung, Versand an: Musterstr. 1, 12345 Berlin…"></textarea>
+          <div class="reserve-form-err" id="err_${escHtml(item.id)}">Bitte alle Felder ausfüllen.</div>
+          <div class="reserve-form-btns">
+            <button class="btn btn-ghost btn-sm" onclick="hideInlineForm('${escHtml(item.id)}')">Abbrechen</button>
+            <button class="btn btn-accent btn-sm" onclick="confirmReserve('${escHtml(item.id)}')">Reservieren ✓</button>
+          </div>
+        </div>`;
+    } else {
+      actionHTML = `<p style="font-size:0.8rem;color:var(--danger);margin-top:0.75rem;text-align:center;">✕ Alle Plätze belegt</p>`;
+    }
+  }
+
+  return `<div class="card" id="card_${escHtml(item.id)}">
+    ${imgHTML}
+    <div class="card-body">
+      ${item.category ? `<div class="card-category">${escHtml(item.category)}</div>` : ''}
+      <div class="card-title">${escHtml(item.title)}</div>
+      ${item.desc ? `<div class="card-desc">${escHtml(item.desc)}</div>` : ''}
+      <div class="card-meta">
+        <span class="badge ${taken ? 'badge-taken' : 'badge-available'}">${taken ? '✕ Belegt' : '✓ Verfügbar'}</span>
+        ${item.price ? `<span class="badge badge-price">💰 ${escHtml(item.price)}</span>` : ''}
+        ${item.slots > 1 ? `<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--muted)">👥 ${item.slots} Plätze</span>` : ''}
+      </div>
+      ${regsHTML}
+      ${actionHTML}
+    </div>
+  </div>`;
+}
+
+function updateStats() {
+  const visible = items.filter(i => !i.locked);
+  document.getElementById('statTotal').textContent = visible.length;
+  document.getElementById('statAvail').textContent = visible.filter(i => takenCount(i) < i.slots).length;
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+// ── INLINE FORM ──────────────────────────────────────────
+function showInlineForm(itemId) {
+  if (!myName) { pendingReserveId = itemId; openNameModal(true); return; }
+  const btn = document.getElementById(`btnWrap_${itemId}`), form = document.getElementById(`form_${itemId}`);
+  if (btn) btn.style.display = 'none';
+  if (form) form.style.display = 'flex';
+}
+
+function hideInlineForm(itemId) {
+  const btn = document.getElementById(`btnWrap_${itemId}`), form = document.getElementById(`form_${itemId}`);
+  if (btn) btn.style.display = '';
+  if (form) form.style.display = 'none';
+  const err = document.getElementById(`err_${itemId}`);
+  if (err) err.classList.remove('visible');
+}
+
+function selectFilament(itemId, val, btn) {
+  document.getElementById(`filval_${itemId}`).value = val;
+  document.querySelectorAll(`#fil_${itemId} .fpick-btn`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById(`err_${itemId}`).classList.remove('visible');
+}
+
+async function confirmReserve(itemId) {
+  const filament = document.getElementById(`filval_${itemId}`).value.trim();
+  const delivery = document.getElementById(`del_${itemId}`).value.trim();
+  const err = document.getElementById(`err_${itemId}`);
+  if (!filament || !delivery) { err.classList.add('visible'); return; }
+  err.classList.remove('visible');
+
+  const item = items.find(i => i.id === itemId);
+  if (!item) return;
+  try {
+    const a = await getAuth();
+    myUid = a.uid;
+    // Aktuellen Stand prüfen, damit niemand über das Limit hinaus reserviert
+    const current = (await db(`taken/${itemId}`)) || {};
+    if (current[a.uid]) { toast('Du bist bereits eingetragen!', 'error'); await loadAll(); return; }
+    if (Object.keys(current).length >= item.slots) { toast('Leider schon belegt!', 'error'); await loadAll(); return; }
+
+    await db('', 'PATCH', {
+      [`reservations/${itemId}/${a.uid}`]: { name: myName.slice(0, 60), filament: filament.slice(0, 100), delivery: delivery.slice(0, 500) },
+      [`taken/${itemId}/${a.uid}`]: true
+    });
+    toast('Reserviert! 🎉', 'success');
+    await loadAll();
+  } catch (e) {
+    console.error(e);
+    toast('Reservieren fehlgeschlagen. Bitte erneut versuchen.', 'error');
+  }
+}
+
+// ── CANCEL ──────────────────────────────────────────────
+function askCancel(itemId) { cancellingItemId = itemId; openModal('cancelModal'); }
+
+async function confirmCancel() {
+  const itemId = cancellingItemId;
+  closeModal('cancelModal');
+  cancellingItemId = null;
+  if (!itemId) return;
+  try {
+    const a = await getAuth();
+    await db('', 'PATCH', { [`reservations/${itemId}/${a.uid}`]: null, [`taken/${itemId}/${a.uid}`]: null });
+    toast('Reservierung storniert.', 'success');
+    await loadAll();
+  } catch (e) {
+    console.error(e);
+    toast('Stornieren fehlgeschlagen.', 'error');
+  }
+}
+
+// ── MODAL / TOAST / UTILS ────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('visible'); }
+function closeModal(id) { document.getElementById(id).classList.remove('visible'); }
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('visible'); }));
+
+function toast(msg, type = 'success') {
+  const c = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${type === 'success' ? '✓' : '!'}</span> ${escHtml(msg)}`;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+function escHtml(str) {
+  return String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+// ── INIT ────────────────────────────────────────────────
+updateHeaderName();
+loadAll();
+if (!myName) setTimeout(() => openNameModal(true), 800);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.visible').forEach(m => m.classList.remove('visible')); });
+</script>
+</body>
+</html>
