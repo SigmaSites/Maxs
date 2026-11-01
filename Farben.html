@@ -24,6 +24,7 @@
     header { border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 70px; position: sticky; top: 0; background: rgba(15,14,12,0.92); backdrop-filter: blur(12px); z-index: 100; }
     .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; letter-spacing: -0.02em; color: var(--accent); }
     .logo span { color: var(--text); }
+    .header-actions { display: flex; gap: 0.5rem; align-items: center; }
 
     /* Buttons */
     .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500; transition: all 0.18s ease; }
@@ -104,8 +105,8 @@
     .modal h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 0.4rem; }
     .modal .modal-subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.25rem; }
     .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem; }
-    .modal input[type=text] { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.18s; }
-    .modal input[type=text]:focus { border-color: var(--accent); }
+    .modal input[type=text], .modal input[type=email], .modal input[type=password] { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.18s; }
+    .modal input[type=text]:focus, .modal input[type=email]:focus, .modal input[type=password]:focus { border-color: var(--accent); }
     .modal input::placeholder { color: var(--muted); }
     .form { display: flex; flex-direction: column; gap: 0.5rem; }
     .form label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; margin-top: 0.4rem; }
@@ -130,7 +131,10 @@
 <body>
 <header>
   <div class="logo">Maxs<span>3d</span><span>Shop</span></div>
-  <button class="btn btn-accent btn-sm" onclick="openAddModal()">+ Neue Farbe</button>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" id="authBtn" onclick="authButton()">Admin-Login</button>
+    <button class="btn btn-accent btn-sm" onclick="openAddModal()">+ Neue Farbe</button>
+  </div>
 </header>
 
 <main>
@@ -186,6 +190,24 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <h3>🔐 Admin-Login</h3>
+    <div class="modal-subtitle">Zum Hinzufügen und Löschen von Farben ist eine Anmeldung nötig.</div>
+    <div class="form">
+      <label for="loginEmail">E-Mail</label>
+      <input type="email" id="loginEmail" autocomplete="username" maxlength="120" />
+      <label for="loginPassword">Passwort</label>
+      <input type="password" id="loginPassword" autocomplete="current-password" />
+      <div class="form-err" id="loginErr"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="cancelLogin()">Abbrechen</button>
+      <button class="btn btn-accent" id="loginBtn" onclick="submitLogin()">Anmelden</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="deleteModal">
   <div class="modal">
     <h3>Farbe löschen?</h3>
@@ -200,6 +222,9 @@
 <script>
 /* ===== Nur das hier eintragen: deine Realtime-Database-URL ===== */
 const DATABASE_URL = "https://dshop-23436-default-rtdb.europe-west1.firebasedatabase.app/";
+
+/* Web-API-Key (öffentlich, kein Geheimnis). Das Passwort steht nirgends im Code. */
+const API_KEY = "AIzaSyCIIcYkkfytKxQjnfQnZnNmAnaBeL5mQUo";
 
 const PFAD = "filaments";      // Ordner in der Datenbank
 const AKTUALISIERUNG_SEK = 20; // automatisch neu laden
@@ -280,16 +305,155 @@ $('grid').addEventListener('click', e => {
 });
 $('search').addEventListener('input', render);
 
+/* ===== Anmeldung (Firebase Authentication per REST) ===== */
+const AUTH_STORE = 'filamentAdminSession';
+const LOGIN = 'LOGIN_NEEDED';
+let auth = null;          // { idToken, refreshToken, expiresAt, email }
+let refreshing = null;
+let pendingAction = null; // wird nach erfolgreichem Login ausgeführt
+
+function storeSession() {
+  try {
+    if (auth) localStorage.setItem(AUTH_STORE, JSON.stringify({ refreshToken: auth.refreshToken, email: auth.email }));
+    else localStorage.removeItem(AUTH_STORE);
+  } catch (e) {}
+}
+function authMessage(code = '') {
+  if (/INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD|EMAIL_NOT_FOUND/.test(code)) return 'E-Mail oder Passwort ist falsch.';
+  if (/TOO_MANY_ATTEMPTS/.test(code)) return 'Zu viele Versuche. Bitte später erneut versuchen.';
+  if (/USER_DISABLED/.test(code)) return 'Dieses Konto ist deaktiviert.';
+  if (/INVALID_EMAIL/.test(code)) return 'Die E-Mail-Adresse ist ungültig.';
+  return 'Anmeldung fehlgeschlagen' + (code ? ' (' + code + ')' : '') + '.';
+}
+async function signIn(email, password) {
+  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, returnSecureToken: true })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.idToken) throw new Error(authMessage(data?.error?.message));
+  auth = {
+    idToken: data.idToken,
+    refreshToken: data.refreshToken,
+    expiresAt: Date.now() + (Number(data.expiresIn) || 3600) * 1000 - 60000,
+    email: data.email || email
+  };
+  storeSession();
+  updateAuthUI();
+}
+function refreshAuth() {
+  if (!auth || !auth.refreshToken) return Promise.reject(new Error(LOGIN));
+  if (!refreshing) {
+    refreshing = (async () => {
+      const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: auth.refreshToken })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.id_token) throw new Error(LOGIN);
+      auth.idToken = data.id_token;
+      auth.refreshToken = data.refresh_token || auth.refreshToken;
+      auth.expiresAt = Date.now() + (Number(data.expires_in) || 3600) * 1000 - 60000;
+      storeSession();
+      return auth.idToken;
+    })().finally(() => { refreshing = null; });
+  }
+  return refreshing;
+}
+async function getToken() {
+  if (!auth) return null;
+  if (Date.now() >= auth.expiresAt) {
+    try { await refreshAuth(); } catch (e) { logout(true); return null; }
+  }
+  return auth ? auth.idToken : null;
+}
+function logout(silent) {
+  auth = null; storeSession(); updateAuthUI();
+  if (!silent) toast('Abgemeldet.');
+}
+function restoreSession() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(AUTH_STORE) || 'null');
+    if (saved && saved.refreshToken) auth = { idToken: '', refreshToken: saved.refreshToken, expiresAt: 0, email: saved.email || '' };
+  } catch (e) {}
+  updateAuthUI();
+}
+function updateAuthUI() {
+  $('authBtn').textContent = auth ? 'Abmelden' : 'Admin-Login';
+  $('authBtn').title = auth ? 'Angemeldet als ' + auth.email : '';
+}
+function authButton() {
+  if (auth) { logout(); return; }
+  pendingAction = null;
+  openLoginModal();
+}
+function loginError(text) { $('loginErr').textContent = text; $('loginErr').classList.add('visible'); }
+function openLoginModal(msg) {
+  $('loginErr').classList.remove('visible');
+  if (msg) loginError(msg);
+  openModal('loginModal');
+  setTimeout(() => $($('loginEmail').value ? 'loginPassword' : 'loginEmail').focus(), 200);
+}
+function cancelLogin() { pendingAction = null; closeModal('loginModal'); }
+async function submitLogin() {
+  const email = $('loginEmail').value.trim();
+  const password = $('loginPassword').value;
+  if (!email || !password) return loginError('Bitte E-Mail und Passwort eingeben.');
+  $('loginBtn').disabled = true;
+  try {
+    await signIn(email, password);
+    $('loginPassword').value = '';
+    closeModal('loginModal');
+    toast('Angemeldet als ' + auth.email);
+    const action = pendingAction;
+    pendingAction = null;
+    if (action) action();
+  } catch (error) {
+    loginError(error.message);
+  } finally {
+    $('loginBtn').disabled = false;
+  }
+}
+
+/* ===== Datenbank (nur /filaments) ===== */
+async function dbRequest(method, body, needAuth) {
+  const send = token => fetch(`${baseUrl()}/${PFAD}.json` + (token ? `?auth=${encodeURIComponent(token)}` : ''), {
+    method,
+    ...(body !== undefined ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {})
+  });
+  let token = await getToken();
+  if (needAuth && !token) throw new Error(LOGIN);
+  let res = await send(token);
+  if (res.status === 401 && token) {               // Token abgelaufen? Einmal erneuern.
+    try { token = await refreshAuth(); res = await send(token); }
+    catch (e) { if (needAuth) { logout(true); throw new Error(LOGIN); } }
+    if (!needAuth && res.status === 401) res = await send(null); // Lesen ist öffentlich
+  }
+  return res;
+}
+async function readEntries() {
+  const res = await dbRequest('GET', undefined, false);
+  if (res.status === 401 || res.status === 403) throw new Error('Zugriff verweigert. In den Firebase-Regeln muss Lesen für „' + PFAD + '“ erlaubt sein.');
+  if (!res.ok) throw new Error('Serverantwort ' + res.status);
+  const data = await res.json() || {};
+  const pairs = Array.isArray(data) ? data.map((v, i) => [String(i), v]) : Object.entries(data);
+  return pairs.filter(([, v]) => v && typeof v === 'object');
+}
+async function writeList(values) {
+  const res = await dbRequest('PUT', values, true);
+  if (res.status === 401 || res.status === 403) throw new Error('Keine Berechtigung zum Schreiben. Bitte mit dem Admin-Konto anmelden.');
+  if (!res.ok) throw new Error('Serverantwort ' + res.status);
+}
+
 /* ===== Laden ===== */
 async function load() {
   const base = baseUrl();
   if (!/^https:\/\/.+/.test(base)) { setStatus('Trage oben im Code bei DATABASE_URL deine Datenbank-URL ein.', true); return false; }
   try {
-    const res = await fetch(`${base}/${PFAD}.json`);
-    if (res.status === 401 || res.status === 403) throw new Error('Zugriff verweigert. In den Firebase-Regeln muss Lesen für „' + PFAD + '“ erlaubt sein.');
-    if (!res.ok) throw new Error('Serverantwort ' + res.status);
-    const data = await res.json() || {};
-    filaments = Object.entries(data).map(([id, value]) => {
+    const entries = await readEntries();
+    filaments = entries.map(([id, value]) => {
       const codes = [value?.hex, value?.hex2]
         .filter(v => typeof v === 'string')
         .flatMap(v => v.match(/#(?:[0-9a-f]{6}|[0-9a-f]{3})\b/gi) || [])
@@ -315,7 +479,9 @@ async function load() {
 /* ===== Neue Farbe ===== */
 function openModal(id) { $(id).classList.add('visible'); }
 function closeModal(id) { $(id).classList.remove('visible'); }
-function openAddModal() { $('addErr').classList.remove('visible'); openModal('addModal'); setTimeout(() => $('newColor').focus(), 200); }
+function openAddModal() {
+  if (!auth) { pendingAction = openAddModal; openLoginModal(); return; }
+  $('addErr').classList.remove('visible'); openModal('addModal'); setTimeout(() => $('newColor').focus(), 200); }
 function addError(text) { $('addErr').textContent = text; $('addErr').classList.add('visible'); }
 
 function bindPair(pickerId, hexId) {
@@ -345,19 +511,17 @@ async function saveColor() {
   $('addErr').classList.remove('visible');
   $('saveBtn').disabled = true;
   try {
-    const res = await fetch(`${base}/${PFAD}.json`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dual ? { color, material, hex, hex2 } : { color, material, hex })
-    });
-    if (res.status === 401 || res.status === 403) throw new Error('Schreiben nicht erlaubt. In den Firebase-Regeln muss Schreiben für „' + PFAD + '“ erlaubt sein.');
-    if (!res.ok) throw new Error('Serverantwort ' + res.status);
+    const entries = await readEntries();
+    const values = entries.map(([, v]) => v);
+    values.push(dual ? { color, material, hex, hex2 } : { color, material, hex });
+    await writeList(values);
     $('newColor').value = '';
     closeModal('addModal');
     toast(`„${color}“ gespeichert.`, 'success');
     await load();
   } catch (error) {
-    addError('Fehler beim Speichern: ' + error.message);
+    if (error.message === LOGIN) { closeModal('addModal'); pendingAction = openAddModal; openLoginModal('Sitzung abgelaufen. Bitte erneut anmelden.'); }
+    else addError('Fehler beim Speichern: ' + error.message);
   } finally {
     $('saveBtn').disabled = false;
   }
@@ -366,6 +530,7 @@ async function saveColor() {
 /* ===== Löschen ===== */
 let deleteId = null;
 function askDelete(id) {
+  if (!auth) { pendingAction = () => askDelete(id); openLoginModal(); return; }
   const f = filaments.find(x => x.id === id);
   if (!f) return;
   deleteId = id;
@@ -374,19 +539,23 @@ function askDelete(id) {
 }
 async function confirmDelete() {
   if (!deleteId) return;
-  const base = baseUrl();
+  const id = deleteId;
+  const f = filaments.find(x => x.id === id);
   $('deleteBtn').disabled = true;
   try {
-    const res = await fetch(`${base}/${PFAD}/${encodeURIComponent(deleteId)}.json`, { method: 'DELETE' });
-    if (res.status === 401 || res.status === 403) throw new Error('Löschen nicht erlaubt. In den Firebase-Regeln muss Schreiben für „' + PFAD + '“ erlaubt sein.');
-    if (!res.ok) throw new Error('Serverantwort ' + res.status);
+    const entries = await readEntries();   // aktuelle Liste, damit nichts überschrieben wird
+    let idx = entries.findIndex(([k, v]) => k === id && f && v.color === f.color);
+    if (idx < 0 && f) idx = entries.findIndex(([, v]) => v.color === f.color && (v.material || '') === f.material);
     closeModal('deleteModal');
-    toast('Farbe gelöscht.', 'success');
     deleteId = null;
+    if (idx < 0) { toast('Die Farbe ist nicht mehr vorhanden.', 'error'); await load(); return; }
+    await writeList(entries.filter((_, i) => i !== idx).map(([, v]) => v));
+    toast('Farbe gelöscht.', 'success');
     await load();
   } catch (error) {
     closeModal('deleteModal');
-    toast(error.message, 'error');
+    if (error.message === LOGIN) { pendingAction = () => askDelete(id); openLoginModal('Sitzung abgelaufen. Bitte erneut anmelden.'); }
+    else toast(error.message, 'error');
   } finally {
     $('deleteBtn').disabled = false;
   }
@@ -395,8 +564,10 @@ async function confirmDelete() {
 document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('visible'); }));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.visible').forEach(m => m.classList.remove('visible')); });
 $('newColor').addEventListener('keydown', e => { if (e.key === 'Enter') saveColor(); });
+['loginEmail', 'loginPassword'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') submitLogin(); }));
 
+restoreSession();
 load().then(ok => { if (ok) setInterval(load, AKTUALISIERUNG_SEK * 1000); });
 </script>
 </body>
-</html>
+  </html>
