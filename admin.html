@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maxs 3d Shop</title>
+  <title>Admin – Maxs 3d Shop</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -20,10 +20,7 @@
     header { border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 70px; position: sticky; top: 0; background: rgba(15,14,12,0.92); backdrop-filter: blur(12px); z-index: 100; }
     .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; letter-spacing: -0.02em; color: var(--accent); }
     .logo span { color: var(--text); }
-    .my-name-tag { display: flex; align-items: center; gap: 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 0.85rem; cursor: pointer; transition: border-color 0.15s; }
-    .my-name-tag:hover { border-color: var(--accent); }
-    .my-name-tag .name-label { color: var(--muted); font-size: 0.75rem; }
-    .my-name-tag .name-val { color: var(--accent); font-weight: 500; }
+    .header-actions { display: flex; gap: 0.75rem; align-items: center; }
     .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500; transition: all 0.18s ease; }
     .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
     .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
@@ -32,27 +29,75 @@
     .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
     .btn-danger:hover { background: var(--danger); color: white; }
     .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
-    .btn-full { width: 100%; justify-content: center; }
-    main { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
-    .hero { text-align: center; padding: 3rem 0 4rem; }
-    .hero-tag { display: inline-block; background: rgba(232,201,126,0.1); border: 1px solid rgba(232,201,126,0.25); color: var(--accent); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.3rem 0.9rem; border-radius: 100px; margin-bottom: 1.25rem; }
-    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 1rem; }
-    .hero h1 em { font-style: italic; color: var(--accent); }
-    .hero p { color: var(--muted); font-size: 1.05rem; max-width: 500px; margin: 0 auto; line-height: 1.7; }
-    .stats-bar { display: flex; justify-content: center; gap: 3rem; padding: 1.5rem 2rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
-    .stat { text-align: center; }
-    .stat-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--accent); }
-    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.1rem; }
+
+    /* LOGIN */
+    #loginScreen { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 70px); padding: 2rem; }
+    .login-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2.5rem; width: 100%; max-width: 380px; animation: fadeUp 0.3s ease; }
+    .login-box h2 { font-family: 'Playfair Display', serif; font-size: 1.75rem; margin-bottom: 0.5rem; color: var(--accent); }
+    .login-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .login-box input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 0.9rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; outline: none; margin-bottom: 0.75rem; transition: border-color 0.18s; }
+    .login-box input:focus { border-color: var(--accent); }
+    .error-msg { color: var(--danger); font-size: 0.8rem; margin-bottom: 0.75rem; display: none; }
+    .error-msg.visible { display: block; }
+
+    #adminContent { display: none; }
+    #adminContent.visible { display: block; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem 2rem 3rem; }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem; }
+    .panel h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 1.25rem; color: var(--accent); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
+    .form-group input, .form-group textarea { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.18s; }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-actions { grid-column: 1 / -1; display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem; }
+
+    /* FILAMENT */
+    .filament-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+    .filament-item { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border-radius: 8px; padding: 0.6rem 0.9rem; }
+    .fil-info { display: flex; align-items: center; gap: 0.75rem; }
+    .fil-dot { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; overflow: hidden; position: relative; }
+    .fil-dot.dual { background: none; }
+    .fil-dot.dual::before, .fil-dot.dual::after { content: ''; position: absolute; top: 0; width: 50%; height: 100%; }
+    .fil-dot.dual::before { left: 0; background: var(--c1); border-radius: 50% 0 0 50%; }
+    .fil-dot.dual::after  { right: 0; background: var(--c2); border-radius: 0 50% 50% 0; }
+    .fil-name { font-size: 0.9rem; }
+    .fil-mat { font-size: 0.75rem; color: var(--muted); margin-left: 0.2rem; }
+    .fil-add-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    .fil-add-row input[type="color"] { width: 48px; height: 38px; padding: 0.2rem; cursor: pointer; border-radius: 6px; background: var(--surface2); border: 1px solid var(--border); flex: none; }
+    .fil-add-row input[type="text"] { flex: 1; min-width: 100px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 0.75rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.875rem; outline: none; transition: border-color 0.18s; }
+    .fil-add-row input[type="text"]:focus { border-color: var(--accent); }
+    .fil-add-row input::placeholder { color: var(--muted); }
+    .fil-empty { font-size: 0.85rem; color: var(--muted); text-align: center; padding: 1rem; }
+
+    /* IMAGE UPLOAD */
+    .img-upload-box {
+      width: 100%; aspect-ratio: 16/9; background: var(--surface2); border: 2px dashed var(--border);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: border-color 0.15s; overflow: hidden; position: relative;
+      font-size: 0.9rem; color: var(--muted);
+    }
+    .img-upload-box:hover { border-color: var(--accent); color: var(--text); }
+    .img-upload-box.has-image { border-style: solid; border-color: rgba(232,201,126,0.3); }
+
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
     .section-header h2 { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; }
     .filter-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .tab { padding: 0.35rem 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-size: 0.8rem; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
     .tab.active, .tab:hover { background: var(--surface); color: var(--text); border-color: rgba(232,201,126,0.3); }
     .tab.active { color: var(--accent); }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+    #tabLocked.active { color: var(--danger) !important; border-color: rgba(192,97,74,0.4) !important; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 1.5rem; }
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s, transform 0.2s; animation: fadeUp 0.4s ease both; }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     .card:hover { border-color: rgba(232,201,126,0.3); transform: translateY(-2px); }
+    .card.card-locked { border-color: rgba(192,97,74,0.3); opacity: 0.8; }
     .card-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--surface2); display: block; }
     .card-img-placeholder { width: 100%; aspect-ratio: 16/9; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
     .card-body { padding: 1.25rem; }
@@ -64,27 +109,42 @@
     .badge-available { background: rgba(106,158,114,0.15); color: var(--success); }
     .badge-taken { background: rgba(192,97,74,0.15); color: var(--danger); }
     .badge-price { background: rgba(232,201,126,0.1); color: var(--accent); }
+    .badge-locked { background: rgba(192,97,74,0.15); color: var(--danger); }
+
     .registrations { border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 0.75rem; }
     .reg-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; }
-    .reg-others { font-size: 0.8rem; color: var(--muted); padding: 0.4rem 0.7rem; background: var(--surface2); border-radius: 6px; text-align: center; }
-    .my-reg-box { margin-top: 0.75rem; background: rgba(232,201,126,0.06); border: 1px solid rgba(232,201,126,0.2); border-radius: 8px; padding: 0.85rem; }
-    .my-reg-box .my-reg-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 0.5rem; }
-    .my-reg-row { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; margin-bottom: 0.2rem; }
-    .my-reg-row .muted { color: var(--muted); font-size: 0.75rem; }
-    .cancel-link { margin-top: 0.6rem; font-size: 0.78rem; color: var(--danger); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 0; display: inline-block; }
-    .cancel-link:hover { text-decoration: underline; }
-    .reserve-form { margin-top: 0.75rem; border-top: 1px solid var(--border); padding-top: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem; }
-    .reserve-form label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
-    .reserve-form select, .reserve-form textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 0.75rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.875rem; outline: none; transition: border-color 0.18s; }
-    .reserve-form select:focus, .reserve-form textarea:focus { border-color: var(--accent); }
-    .reserve-form select option { background: var(--surface2); }
-    .reserve-form textarea { resize: none; min-height: 60px; }
-    .reserve-form textarea::placeholder { color: var(--muted); }
-    .reserve-form-err { font-size: 0.78rem; color: var(--danger); display: none; }
-    .reserve-form-err.visible { display: block; }
-    .reserve-form-btns { display: flex; gap: 0.5rem; }
-    .reserve-form-btns button { flex: 1; }
-    .reserve-btn-wrap { margin-top: 0.75rem; }
+    .reg-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    /* Admin reg card */
+    .reg-card { background: var(--surface2); border-radius: 8px; padding: 0.75rem; }
+    .reg-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
+    .reg-card-name { font-weight: 500; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; }
+    .reg-card-detail { font-size: 0.8rem; color: var(--muted); display: flex; align-items: flex-start; gap: 0.4rem; margin-top: 0.2rem; }
+    .reg-card-detail span { color: var(--text); }
+
+    .card-admin-actions { display: flex; gap: 0.5rem; padding: 0 1.25rem 1.25rem; flex-wrap: wrap; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay.visible { opacity: 1; pointer-events: all; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; width: 100%; max-width: 420px; transform: translateY(20px); transition: transform 0.2s; }
+    .modal-overlay.visible .modal { transform: translateY(0); }
+    .modal h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .modal p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6; }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+    .edit-modal { max-width: 480px; }
+    .edit-field { margin-bottom: 0.85rem; }
+    .edit-field label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; margin-bottom: 0.35rem; }
+    .edit-field input, .edit-field textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.18s; }
+    .edit-field input:focus, .edit-field textarea:focus { border-color: var(--accent); }
+    .edit-field textarea { resize: vertical; min-height: 70px; }
+
+    /* CATEGORY SECTIONS */
+    .cat-section { grid-column: 1 / -1; margin-top: 1rem; }
+    .cat-section:first-child { margin-top: 0; }
+    .cat-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+    .cat-label { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .cat-line { flex: 1; height: 1px; background: var(--border); }
+
     .empty { text-align: center; padding: 5rem 2rem; color: var(--muted); }
     .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
     .empty h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text); margin-bottom: 0.5rem; }
@@ -94,84 +154,145 @@
     @keyframes fadeOut { to { opacity: 0; transform: translateX(20px); } }
     .toast.success { border-color: rgba(106,158,114,0.4); }
     .toast.error { border-color: rgba(192,97,74,0.4); }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-    .modal-overlay.visible { opacity: 1; pointer-events: all; }
-    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; width: 100%; max-width: 400px; transform: translateY(20px); transition: transform 0.2s; }
-    .modal-overlay.visible .modal { transform: translateY(0); }
-    .modal h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 0.4rem; }
-    .modal .modal-subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.25rem; }
-    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem; }
-    .modal input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.18s; }
-    .modal input:focus { border-color: var(--accent); }
-    .modal input::placeholder { color: var(--muted); }
-    .modal p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6; }
-    @media (max-width: 600px) { .stats-bar { gap: 1.5rem; } }
-    .fil-picker { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-    .fpick-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.65rem; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; transition: all 0.15s; }
-    .fpick-btn:hover { border-color: var(--accent); color: var(--text); }
-    .fpick-btn.selected { border-color: var(--accent); background: rgba(232,201,126,0.12); color: var(--text); }
-    .fpick-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; position: relative; }
-    .fpick-dot.dual::before, .fpick-dot.dual::after { content: ''; position: absolute; top: 0; width: 50%; height: 100%; }
-    .fpick-dot.dual::before { left: 0; background: var(--c1); border-radius: 50% 0 0 50%; }
-    .fpick-dot.dual::after { right: 0; background: var(--c2); border-radius: 0 50% 50% 0; }
-    .cat-section { grid-column: 1 / -1; margin-top: 1rem; }
-    .cat-section:first-child { margin-top: 0; }
-    .cat-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
-    .cat-label { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
-    .cat-line { flex: 1; height: 1px; background: var(--border); }
+    /* WÄHLBARE FARBEN PRO ARTIKEL */
+    .edit-modal { max-height: 90vh; overflow-y: auto; }
+    .cp { display: flex; flex-direction: column; gap: 0.6rem; }
+    .cp-modes { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .cp .cp-mode { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.4rem 0.8rem; border: 1px solid var(--border); border-radius: 20px; background: var(--surface2); color: var(--muted); font-size: 0.82rem; text-transform: none; letter-spacing: 0; font-weight: 500; cursor: pointer; margin: 0; }
+    .cp .cp-mode.on { border-color: var(--accent); background: rgba(232,201,126,0.12); color: var(--text); }
+    .cp .cp-mode input { appearance: auto; -webkit-appearance: auto; width: auto; padding: 0; margin: 0; border: none; background: none; border-radius: 0; accent-color: var(--accent); }
+    .cp-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .cp .cp-chip { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.65rem; border: 1px solid var(--border); border-radius: 20px; background: var(--surface2); color: var(--muted); font-size: 0.78rem; text-transform: none; letter-spacing: 0; font-weight: 400; cursor: pointer; margin: 0; }
+    .cp .cp-chip.on { border-color: var(--accent); background: rgba(232,201,126,0.12); color: var(--text); }
+    .cp .cp-chip input { display: none; }
+    .cp .cp-chip .fil-dot { width: 12px; height: 12px; }
   </style>
 </head>
 <body>
+
 <header>
-  <div class="logo">Maxs<span>3d</span><span>Shop</span></div>
-  <div class="my-name-tag" onclick="openNameModal(false)" title="Namen ändern">
-    <span class="name-label">Mein Name:</span>
-    <span class="name-val" id="headerName">–</span>
-    <span style="color:var(--muted);font-size:0.75rem;">✎</span>
+  <div class="logo">Maxs<span>3d</span><span>Shop</span> <span style="font-size:1rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400;">/ Admin</span></div>
+  <div class="header-actions">
+    <a href="echt.html" class="btn btn-ghost">← Zur Shopseite</a>
+    <button class="btn btn-ghost" id="refreshBtn" style="display:none" onclick="reloadData()">↻ Aktualisieren</button>
+    <button class="btn btn-ghost" id="logoutBtn" style="display:none" onclick="logout()">Abmelden</button>
   </div>
 </header>
-<main>
-  <div class="hero">
-    <div class="hero-tag">Hallo</div>
-    <h1>Schön dass du den Weg<br><em>hier her gefunden hast!</em></h1>
-    <p></p>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h2>🔐 Admin-Zugang</h2>
+    <p>Melde dich mit deinem Admin-Konto an, um den Shop zu verwalten.</p>
+    <div class="error-msg" id="loginError">Falsche Zugangsdaten.</div>
+    <input type="email" id="emailInput" placeholder="E-Mail…" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('passwordInput').focus()" />
+    <input type="password" id="passwordInput" placeholder="Passwort…" autocomplete="current-password" onkeydown="if(event.key==='Enter')checkLogin()" />
+    <button class="btn btn-accent" id="loginBtn" style="width:100%" onclick="checkLogin()">Einloggen</button>
   </div>
-  <div class="stats-bar">
-    <div class="stat"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Artikel</div></div>
-    <div class="stat"><div class="stat-value" id="statAvail">0</div><div class="stat-label">Verfügbar</div></div>
-  </div>
-  <div class="section-header">
-    <h2>Alle Artikel</h2>
-    <div class="filter-tabs">
-      <button class="tab active" onclick="setFilter('all', this)">Alle</button>
-      <button class="tab" onclick="setFilter('available', this)">Verfügbar</button>
-      <button class="tab" onclick="setFilter('taken', this)">Belegt</button>
+</div>
+
+<!-- ADMIN CONTENT -->
+<div id="adminContent">
+  <main>
+
+    <!-- FILAMENT PANEL -->
+    <div class="panel">
+      <h2>🎨 Filamente verwalten</h2>
+      <div class="filament-list" id="filamentList">
+        <div class="fil-empty">Noch keine Filamente eingetragen.</div>
+      </div>
+      <div class="fil-add-row">
+        <div style="display:flex;flex-direction:column;gap:0.2rem;align-items:center">
+          <input type="color" id="filColor" value="#ffffff" title="Farbe 1" />
+          <span style="font-size:0.65rem;color:var(--muted)">Farbe 1</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.2rem;align-items:center">
+          <input type="color" id="filColor2" value="#ffffff" title="Farbe 2 (optional)" />
+          <span style="font-size:0.65rem;color:var(--muted)">Farbe 2</span>
+        </div>
+        <input type="checkbox" id="filDual" style="display:none" />
+        <input type="text" id="filColorName" placeholder="Farbe (z.B. Schwarz/Weiß)" />
+        <input type="text" id="filMaterial" placeholder="Material (z.B. PLA)" />
+        <button class="btn btn-accent btn-sm" onclick="addFilament()">＋ Hinzufügen</button>
+      </div>
+      <p style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">💡 Für Dualfarben beide Farben wählen und z.B. „Schwarz/Weiß" als Namen eintragen.</p>
     </div>
-  </div>
-  <div class="grid" id="itemGrid"></div>
-</main>
+
+    <!-- ADD ARTICLE -->
+    <div class="panel">
+      <h2>✦ Artikel hinzufügen</h2>
+      <div class="form-grid">
+        <div class="form-group"><label>Titel *</label><input type="text" id="newTitle" placeholder="z.B. Vase" /></div>
+        <div class="form-group"><label>Kategorie</label><input type="text" id="newCategory" placeholder="z.B. Deko…" /></div>
+        <div class="form-group full"><label>Beschreibung</label><textarea id="newDesc" placeholder="Kurze Beschreibung…"></textarea></div>
+        <div class="form-group"><label>Bild-URL (optional)</label><input type="url" id="newImage" placeholder="https://…" /></div>
+        <div class="form-group"><label>Emoji (Platzhalter)</label><input type="text" id="newEmoji" placeholder="🖨️" maxlength="4" /></div>
+        <div class="form-group"><label>Preis / Info (optional)</label><input type="text" id="newPrice" placeholder="z.B. Kostenlos, 5 €…" /></div>
+        <div class="form-group"><label>Max. Reservierungen</label><input type="number" id="newSlots" value="1" min="1" max="99" /></div>
+        <div class="form-group full"><label>Wählbare Farben</label><div id="newColorPicker"></div></div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="clearForm()">✕ Leeren</button>
+          <button class="btn btn-accent" onclick="addItem()">＋ Hinzufügen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ITEMS -->
+    <div class="section-header">
+      <h2>Artikel verwalten</h2>
+      <div class="filter-tabs">
+        <button class="tab active" id="tabAll" onclick="setFilter('all', this)">Alle</button>
+        <button class="tab" onclick="setFilter('available', this)">Verfügbar</button>
+        <button class="tab" onclick="setFilter('taken', this)">Belegt</button>
+        <button class="tab" id="tabLocked" onclick="setFilter('locked', this)">🔒 Gesperrt</button>
+      </div>
+    </div>
+    <div class="grid" id="itemGrid"></div>
+  </main>
+</div>
+
 <div class="toast-container" id="toastContainer"></div>
-<div class="modal-overlay" id="nameModal">
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="deleteModal">
   <div class="modal">
-    <h3>👤 Dein Name</h3>
-    <div class="modal-subtitle" id="nameModalDesc">Gib deinen Namen ein. Er wird gespeichert, damit du deine Reservierungen wiederfindest.</div>
-    <input type="text" id="nameInput" placeholder="Dein Name…" maxlength="60" onkeydown="if(event.key==='Enter')saveName()" />
+    <h3>🗑 Artikel löschen?</h3>
+    <p id="deleteModalText">Dieser Artikel wird unwiderruflich gelöscht.</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost" id="nameCancelBtn" onclick="closeModal('nameModal')">Abbrechen</button>
-      <button class="btn btn-accent" onclick="saveName()">Speichern</button>
+      <button class="btn btn-ghost" onclick="closeModal('deleteModal')">Abbrechen</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Löschen</button>
     </div>
   </div>
 </div>
-<div class="modal-overlay" id="cancelModal">
+
+<!-- UNREGISTER MODAL -->
+<div class="modal-overlay" id="unregModal">
   <div class="modal">
-    <h3>Reservierung stornieren?</h3>
-    <p>Deine Reservierung wird unwiderruflich entfernt.</p>
+    <h3>Reservierung entfernen?</h3>
+    <p id="unregModalText">Diese Reservierung wirklich entfernen?</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('cancelModal')">Behalten</button>
-      <button class="btn btn-danger" onclick="confirmCancel()">Stornieren</button>
+      <button class="btn btn-ghost" onclick="closeModal('unregModal')">Abbrechen</button>
+      <button class="btn btn-danger" onclick="confirmUnreg()">Entfernen</button>
     </div>
   </div>
 </div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal edit-modal">
+    <h3>✏ Artikel bearbeiten</h3>
+    <div class="edit-field"><label>Titel *</label><input type="text" id="editTitle" /></div>
+    <div class="edit-field"><label>Beschreibung</label><textarea id="editDesc"></textarea></div>
+    <div class="edit-field"><label>Preis / Info</label><input type="text" id="editPrice" /></div>
+    <div class="edit-field"><label id="editSlotsLabel">Plätze</label><input type="number" id="editSlots" min="1" max="99" /></div>
+    <div class="edit-field"><label>Wählbare Farben</label><div id="editColorPicker"></div></div>
+    <div class="modal-actions" style="margin-top:1.25rem;">
+      <button class="btn btn-ghost" onclick="closeModal('editModal')">Abbrechen</button>
+      <button class="btn btn-accent" onclick="saveEdit()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── CONFIG ──────────────────────────────────────────────
 const FIREBASE_URL = "https://dshop-23436-default-rtdb.europe-west1.firebasedatabase.app";
@@ -179,29 +300,24 @@ const API_KEY      = "AIzaSyCIIcYkkfytKxQjnfQnZnNmAnaBeL5mQUo";   // Firebase �
 const DB = FIREBASE_URL.replace(/\/+$/, '');
 
 // ── STATE ───────────────────────────────────────────────
-let items = [], filaments = [];
-let takenMap = {};          // { itemId: { uid: true } }  – nur Anzahl, keine Namen
-let myRegs = {};            // { itemId: { name, filament, delivery } } – nur eigene
-let myUid = null;
+let auth = null;                 // { idToken, refreshToken, uid, expiresAt }
+let items = [], filaments = [], reservations = {};
 let currentFilter = 'all';
-let myName = localStorage.getItem('shopMyName') || '';
-let pendingReserveId = null, cancellingItemId = null;
-let firstLoad = true;
-let auth = null;
+let pendingDeleteId = null, pendingUnreg = null, editingId = null;
 
-// ── AUTH (anonym, pro Gerät/Browser) ─────────────────────
-function readStoredAuth() {
-  try { return JSON.parse(localStorage.getItem('shopAuth') || 'null'); } catch (e) { return null; }
+// ── AUTH ────────────────────────────────────────────────
+function authFromSignIn(d) {
+  return { idToken: d.idToken, refreshToken: d.refreshToken, uid: d.localId, expiresAt: Date.now() + (parseInt(d.expiresIn, 10) - 60) * 1000 };
 }
 
-async function anonSignIn() {
-  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`, {
+async function adminSignIn(email, password) {
+  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ returnSecureToken: true })
+    body: JSON.stringify({ email, password, returnSecureToken: true })
   });
   const d = await res.json();
-  if (!res.ok) { const e = new Error((d.error && d.error.message) || 'AUTH_FAILED'); e.status = res.status; throw e; }
-  return { idToken: d.idToken, refreshToken: d.refreshToken, uid: d.localId, expiresAt: Date.now() + (parseInt(d.expiresIn, 10) - 60) * 1000 };
+  if (!res.ok) throw new Error((d.error && d.error.message) || 'LOGIN_FAILED');
+  return authFromSignIn(d);
 }
 
 async function refreshAuth(a) {
@@ -217,22 +333,11 @@ async function refreshAuth(a) {
 let authPromise = null;
 function getAuth() {
   if (auth && Date.now() < auth.expiresAt) return Promise.resolve(auth);
+  if (!auth) return Promise.reject(new Error('NOT_LOGGED_IN'));
   if (!authPromise) {
-    authPromise = (async () => {
-      if (!auth) auth = readStoredAuth();
-      if (auth && Date.now() < auth.expiresAt) return auth;
-      if (auth && auth.refreshToken) {
-        try { auth = await refreshAuth(auth); }
-        catch (e) {
-          // Nur bei ungültigem Token ein neues Konto anlegen – nicht bei Netzwerkfehlern
-          if (e.status >= 400 && e.status < 500) auth = await anonSignIn(); else throw e;
-        }
-      } else {
-        auth = await anonSignIn();
-      }
-      localStorage.setItem('shopAuth', JSON.stringify(auth));
-      return auth;
-    })().finally(() => { authPromise = null; });
+    authPromise = refreshAuth(auth)
+      .then(a => { auth = a; sessionStorage.setItem('shopAdminAuth', JSON.stringify(a)); return a; })
+      .finally(() => { authPromise = null; });
   }
   return authPromise;
 }
@@ -246,101 +351,240 @@ async function db(path, method = 'GET', body) {
   return res.json();
 }
 
-// ── DATA ────────────────────────────────────────────────
+function loginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function friendlyAuthError(e) {
+  const m = String(e && e.message || '');
+  if (m.includes('TOO_MANY_ATTEMPTS')) return 'Zu viele Versuche. Bitte kurz warten und erneut probieren.';
+  if (m.includes('OPERATION_NOT_ALLOWED')) return 'E-Mail/Passwort-Anmeldung ist in Firebase nicht aktiviert.';
+  if (m.includes('API_KEY') || m.includes('API key')) return 'Der API-Key in admin.html ist ungültig.';
+  if (e instanceof TypeError) return 'Keine Verbindung zu Firebase.';
+  return 'E-Mail oder Passwort falsch.';
+}
+
+async function checkLogin() {
+  const email = document.getElementById('emailInput').value.trim();
+  const pw = document.getElementById('passwordInput').value;
+  if (API_KEY.startsWith('DEIN')) { loginError('Bitte zuerst den Web-API-Key in admin.html eintragen.'); return; }
+  if (!email || !pw) { loginError('Bitte E-Mail und Passwort eingeben.'); return; }
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  try {
+    auth = await adminSignIn(email, pw);
+    sessionStorage.setItem('shopAdminAuth', JSON.stringify(auth));
+    document.getElementById('passwordInput').value = '';
+    await enterAdmin();
+  } catch (e) {
+    auth = null;
+    sessionStorage.removeItem('shopAdminAuth');
+    loginError(friendlyAuthError(e));
+  } finally { btn.disabled = false; }
+}
+
+async function enterAdmin() {
+  try {
+    await loadAll(true);
+  } catch (e) {
+    if (e && (e.status === 401 || e.status === 403)) {
+      const uid = auth ? auth.uid : '?';
+      logout();
+      loginError(`Dieses Konto ist kein Admin. Trage die UID ${uid} in den Firebase-Regeln ein (statt HIER_DEINE_ADMIN_UID).`);
+      return;
+    }
+    console.error(e);
+    logout();
+    loginError('Laden fehlgeschlagen. Prüfe die Firebase-URL und deine Verbindung.');
+    return;
+  }
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminContent').classList.add('visible');
+  document.getElementById('logoutBtn').style.display = '';
+  document.getElementById('refreshBtn').style.display = '';
+  document.getElementById('loginError').classList.remove('visible');
+}
+
+function logout() {
+  auth = null;
+  sessionStorage.removeItem('shopAdminAuth');
+  items = []; reservations = {}; filaments = [];
+  document.getElementById('loginScreen').style.display = '';
+  document.getElementById('adminContent').classList.remove('visible');
+  document.getElementById('logoutBtn').style.display = 'none';
+  document.getElementById('refreshBtn').style.display = 'none';
+  document.getElementById('passwordInput').value = '';
+}
+
+// ── DATA LOADING ────────────────────────────────────────
+function entriesOf(v) {
+  if (v == null) return [];
+  const e = Array.isArray(v) ? v.map((x, i) => [String(i), x]) : Object.entries(v);
+  return e.filter(([, x]) => x && typeof x === 'object');
+}
+function toList(v) { return v == null ? [] : (Array.isArray(v) ? v : Object.values(v)).filter(Boolean); }
+
+async function loadAll(allowMigrate) {
+  const [it, hid, fil, res] = await Promise.all([db('items'), db('hidden'), db('filaments'), db('reservations')]);
+  const itemEntries = entriesOf(it);
+
+  // Altes Format erkennen (Reservierungen/Sperr-Flag im öffentlichen Artikelbereich)
+  const legacy = itemEntries.some(([k, x]) => x.registrations !== undefined || x.locked !== undefined || (x.id !== undefined && String(x.id) !== k));
+  if (legacy && allowMigrate) {
+    const n = await migrateLegacy(itemEntries);
+    toast(`Altdaten übernommen (${n} Reservierung${n === 1 ? '' : 'en'}) ✓`, 'success');
+    return loadAll(false);
+  }
+
+  items = [
+    ...itemEntries.map(([k, x]) => ({ ...x, id: String(x.id !== undefined ? x.id : k), colors: normColors(x.colors), locked: false })),
+    ...entriesOf(hid).map(([k, x]) => ({ ...x, id: String(x.id !== undefined ? x.id : k), colors: normColors(x.colors), locked: true }))
+  ].sort((a, b) => (b.created || 0) - (a.created || 0));
+  filaments = toList(fil);
+  reservations = res || {};
+  render(); renderFilaments();
+}
+
+async function reloadData() {
+  try { await loadAll(false); toast('Aktualisiert ✓', 'success'); }
+  catch (e) { toast('Aktualisieren fehlgeschlagen.', 'error'); }
+}
+
+// Altdaten: Reservierungen aus den Artikeln herausholen (damit sie nicht öffentlich bleiben)
+async function migrateLegacy(entries) {
+  const itemsObj = {}, hiddenObj = {}, stage = {}, patch = {};
+  let count = 0;
+  entries.forEach(([k, x]) => {
+    const id = String(x.id !== undefined ? x.id : k);
+    if (itemsObj[id] || hiddenObj[id]) return;            // Duplikate (bei wiederholtem Lauf) überspringen
+    const { registrations, locked, ...rest } = x;
+    const clean = { ...rest, id, slots: Math.max(1, parseInt(rest.slots, 10) || 1) };
+    (locked ? hiddenObj : itemsObj)[id] = clean;
+    stage[`items/${id}`] = { ...x, id };                   // vorläufig unter der id ablegen
+    const regs = (Array.isArray(registrations) ? registrations : registrations ? Object.values(registrations) : []).filter(Boolean);
+    regs.forEach((r, n) => {
+      const rec = typeof r === 'string' ? { name: r } : r;
+      const key = 'legacy_' + n;
+      patch[`reservations/${id}/${key}`] = {
+        name: String(rec.name || '?').slice(0, 60) || '?',
+        filament: String(rec.filament || '–').slice(0, 100) || '–',
+        delivery: String(rec.delivery || '–').slice(0, 500) || '–'
+      };
+      patch[`taken/${id}/${key}`] = true;
+      count++;
+    });
+  });
+  await db('', 'PATCH', stage);                            // 1) Artikel existieren jetzt unter ihrer id
+  if (count) await db('', 'PATCH', patch);                 // 2) Reservierungen sichern
+  await db('items', 'PUT', itemsObj);                      // 3) öffentliche Artikel bereinigen
+  if (Object.keys(hiddenObj).length) await db('hidden', 'PATCH', hiddenObj);
+  return count;
+}
+
+// ── WÄHLBARE FARBEN PRO ARTIKEL ──────────────────────────
+// Ein Artikel ohne "colors" erlaubt alle Farben. Mit "colors" nur die genannten ("Farbe – Material").
 function filLabel(f) { return f.color + ' \u2013 ' + f.material; }
 function normColors(c) {
   const arr = Array.isArray(c) ? c : (c && typeof c === 'object' ? Object.values(c) : null);
   const list = arr ? arr.filter(x => typeof x === 'string') : [];
   return list.length ? list : null;
 }
-// Nur die Farben, die für diesen Artikel freigegeben sind (ohne Einschränkung: alle)
-function availableFilaments(item) { return item.colors ? filaments.filter(f => item.colors.includes(filLabel(f))) : filaments; }
-function toList(v) { return v == null ? [] : (Array.isArray(v) ? v : Object.values(v)).filter(Boolean); }
-function toItems(v) {
-  if (v == null) return [];
-  const entries = Array.isArray(v) ? v.map((x, i) => [String(i), x]) : Object.entries(v);
-  return entries.filter(([, x]) => x && typeof x === 'object').map(([k, x]) => ({ ...x, id: String(x.id !== undefined ? x.id : k), colors: normColors(x.colors) }));
+function colorPickerHTML(prefix, selected) {
+  const restricted = Array.isArray(selected);
+  const chips = filaments.map(f => {
+    const lab = filLabel(f);
+    const on = restricted && selected.includes(lab);
+    const dot = `<span class="fil-dot ${f.hex2 ? 'dual' : ''}" style="${f.hex2 ? `--c1:${escHtml(f.hex||'#888')};--c2:${escHtml(f.hex2)}` : `background:${escHtml(f.hex||'#888')}`}"></span>`;
+    return `<label class="cp-chip ${on ? 'on' : ''}"><input type="checkbox" value="${escHtml(lab)}" ${on ? 'checked' : ''} onchange="this.parentNode.classList.toggle('on', this.checked)">${dot}<span>${escHtml(lab)}</span></label>`;
+  }).join('');
+  return `<div class="cp">
+    <div class="cp-modes">
+      <label class="cp-mode ${restricted ? '' : 'on'}"><input type="radio" name="${prefix}Mode" value="all" ${restricted ? '' : 'checked'} onchange="cpToggle('${prefix}')"> Alle Farben</label>
+      <label class="cp-mode ${restricted ? 'on' : ''}"><input type="radio" name="${prefix}Mode" value="some" ${restricted ? 'checked' : ''} onchange="cpToggle('${prefix}')"> Nur bestimmte Farben</label>
+    </div>
+    <div class="cp-list" id="${prefix}List" style="${restricted ? '' : 'display:none'}">${chips || '<div class="fil-empty">Lege zuerst Filamente an.</div>'}</div>
+  </div>`;
 }
-function takenCount(item) { return takenMap[item.id] ? Object.keys(takenMap[item.id]).length : 0; }
-function isMine(item) { return !!(myUid && takenMap[item.id] && takenMap[item.id][myUid]); }
-
-async function loadAll() {
-  const grid = document.getElementById('itemGrid');
-  if (API_KEY.startsWith('DEIN')) {
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔑</div><h3>Einrichtung unvollständig</h3><p>Bitte den Web-API-Key in index.html eintragen.</p></div>`;
-    return;
-  }
-  if (firstLoad) {
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">⟳</div><p style="margin-top:1rem;color:var(--muted)">Artikel werden geladen…</p></div>`;
-  }
-  try {
-    const a = await getAuth();
-    myUid = a.uid;
-    const [it, fil, tk] = await Promise.all([db('items'), db('filaments'), db('taken')]);
-    items = toItems(it);
-    filaments = toList(fil);
-    takenMap = tk || {};
-    const mine = items.filter(isMine);
-    const recs = await Promise.all(mine.map(i => db(`reservations/${i.id}/${myUid}`).catch(() => null)));
-    myRegs = {};
-    mine.forEach((i, n) => { if (recs[n]) myRegs[i.id] = recs[n]; });
-    firstLoad = false;
-  } catch (e) {
-    console.error(e);
-    if (e && e.message && /OPERATION_NOT_ALLOWED|ADMIN_ONLY/.test(e.message)) {
-      toast('Anonyme Anmeldung ist in Firebase nicht aktiviert.', 'error');
-    } else {
-      toast('Laden fehlgeschlagen.', 'error');
-    }
-    if (firstLoad) items = [];
-  }
-  render(); updateStats();
+function cpToggle(prefix) {
+  const mode = document.querySelector(`input[name="${prefix}Mode"]:checked`);
+  document.querySelectorAll(`input[name="${prefix}Mode"]`).forEach(r => r.parentNode.classList.toggle('on', r.checked));
+  document.getElementById(`${prefix}List`).style.display = mode && mode.value === 'some' ? '' : 'none';
+}
+function readColorPicker(prefix) {          // null = alle Farben, sonst Liste der gewählten
+  const mode = document.querySelector(`input[name="${prefix}Mode"]:checked`);
+  if (!mode || mode.value !== 'some') return null;
+  return [...document.querySelectorAll(`#${prefix}List input[type=checkbox]:checked`)].map(i => i.value);
+}
+function renderNewColorPicker(reset) {
+  const el = document.getElementById('newColorPicker');
+  if (!el) return;
+  el.innerHTML = colorPickerHTML('newColors', reset ? null : readColorPicker('newColors'));
 }
 
-setInterval(() => {
-  // Nicht neu laden, solange jemand gerade ein Reservierungsformular ausfüllt
-  const formOpen = [...document.querySelectorAll('.reserve-form')].some(f => f.style.display === 'flex');
-  if (!formOpen) loadAll();
-}, 30000);
-
-// ── NAME ────────────────────────────────────────────────
-function updateHeaderName() { document.getElementById('headerName').textContent = myName || '–'; }
-
-function openNameModal(isFirst) {
-  document.getElementById('nameInput').value = myName;
-  document.getElementById('nameModalDesc').textContent = isFirst
-    ? 'Gib deinen Namen ein damit du deine Reservierungen wiederfindest.'
-    : 'Namen ändern – bestehende Reservierungen bleiben unter dem alten Namen.';
-  document.getElementById('nameCancelBtn').style.display = isFirst ? 'none' : '';
-  openModal('nameModal');
-  setTimeout(() => document.getElementById('nameInput').focus(), 200);
+// ── FILAMENTS ────────────────────────────────────────────
+async function saveFilaments() {
+  try { await db('filaments', 'PUT', filaments); }
+  catch (e) { toast('Speichern fehlgeschlagen.', 'error'); }
+  renderFilaments();
 }
 
-function saveName() {
-  const val = document.getElementById('nameInput').value.trim();
-  if (!val) { toast('Bitte einen Namen eingeben.', 'error'); return; }
-  myName = val.slice(0, 60);
-  localStorage.setItem('shopMyName', myName);
-  updateHeaderName();
-  closeModal('nameModal');
-  render();
-  toast(`Name gespeichert: ${myName} ✓`, 'success');
-  if (pendingReserveId) { showInlineForm(pendingReserveId); pendingReserveId = null; }
+function renderFilaments() { renderFilamentList(); renderNewColorPicker(); }
+
+function renderFilamentList() {
+  const list = document.getElementById('filamentList');
+  if (!filaments.length) { list.innerHTML = '<div class="fil-empty">Noch keine Filamente.</div>'; return; }
+  list.innerHTML = filaments.map((f, i) => `
+    <div class="filament-item">
+      <div class="fil-info">
+        <div class="fil-dot ${f.hex2 ? 'dual' : ''}" style="${f.hex2 ? `--c1:${escHtml(f.hex||'#888')};--c2:${escHtml(f.hex2)}` : `background:${escHtml(f.hex||'#888')}`}"></div>
+        <span class="fil-name">${escHtml(f.color)}</span>
+        <span class="fil-mat">– ${escHtml(f.material)}</span>
+      </div>
+      <button class="btn btn-sm btn-danger" onclick="removeFilament(${i})">✕</button>
+    </div>`).join('');
 }
 
-// ── RENDER ──────────────────────────────────────────────
+function addFilament() {
+  const color = document.getElementById('filColorName').value.trim();
+  const material = document.getElementById('filMaterial').value.trim();
+  const hex = document.getElementById('filColor').value;
+  const hex2raw = document.getElementById('filColor2').value;
+  const hex2 = hex2raw !== hex ? hex2raw : null;
+  if (!color || !material) { toast('Farbe und Material angeben.', 'error'); return; }
+  filaments.push({ color, material, hex, ...(hex2 ? { hex2 } : {}) });
+  saveFilaments();
+  document.getElementById('filColorName').value = '';
+  document.getElementById('filMaterial').value = '';
+  toast(`${color} ${material} hinzugefügt ✓`, 'success');
+}
+
+function removeFilament(idx) {
+  filaments.splice(idx, 1);
+  saveFilaments();
+  toast('Filament entfernt.', 'success');
+}
+
+// ── RENDER ITEMS ─────────────────────────────────────────
+function getRegs(item) {
+  return Object.entries(reservations[item.id] || {})
+    .filter(([, r]) => r && typeof r === 'object')
+    .map(([uid, r]) => ({ uid, name: r.name || '', filament: r.filament || '', delivery: r.delivery || '' }));
+}
+
 function render() {
   const grid = document.getElementById('itemGrid');
-  if (API_KEY.startsWith('DEIN')) return;
-  let filtered = items.filter(i => !i.locked);
-  if (currentFilter === 'available') filtered = filtered.filter(i => takenCount(i) < i.slots);
-  if (currentFilter === 'taken')     filtered = filtered.filter(i => takenCount(i) >= i.slots);
-
-  if (filtered.length === 0) {
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📭</div><h3>Keine Artikel gefunden</h3><p>Versuche einen anderen Filter.</p></div>`;
+  let filtered = items;
+  if (currentFilter === 'available') filtered = items.filter(i => !i.locked && getRegs(i).length < i.slots);
+  if (currentFilter === 'taken')     filtered = items.filter(i => !i.locked && getRegs(i).length >= i.slots);
+  if (currentFilter === 'locked')    filtered = items.filter(i => i.locked);
+  if (!filtered.length) {
+    const icon = currentFilter === 'locked' ? '🔒' : '📭';
+    const title = currentFilter === 'locked' ? 'Keine gesperrten Artikel' : 'Keine Artikel';
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">${icon}</div><h3>${title}</h3></div>`;
     return;
   }
-
   const groups = {};
   filtered.forEach(item => {
     const cat = (item.category || 'Sonstiges').trim();
@@ -348,182 +592,204 @@ function render() {
     groups[cat].push(item);
   });
   const sortedCats = Object.keys(groups).sort((a, b) => a.localeCompare(b, 'de'));
-
   let html = '';
   sortedCats.forEach(cat => {
     html += `<div class="cat-section" style="grid-column:1/-1"><div class="cat-header"><span class="cat-label">${escHtml(cat)}</span><div class="cat-line"></div></div></div>`;
     groups[cat].forEach(item => { html += cardHTML(item); });
   });
-
   grid.innerHTML = html;
-  grid.querySelectorAll('.card').forEach((c, i) => c.style.animationDelay = `${i * 0.06}s`);
-  filtered.forEach(item => {
-    const picker = document.getElementById(`fil_${item.id}`);
-    if (!picker) return;
-    picker.innerHTML = availableFilaments(item).map(f => {
-      const val = f.color + ' \u2013 ' + f.material;
-      const dot = f.hex2
-        ? `<span class="fpick-dot dual" style="--c1:${escHtml(f.hex||'#888')};--c2:${escHtml(f.hex2)}"></span>`
-        : `<span class="fpick-dot" style="background:${escHtml(f.hex||'#888')}"></span>`;
-      return `<button class="fpick-btn" onclick="selectFilament('${escHtml(item.id)}', this.dataset.val, this)" data-val="${escHtml(val)}">${dot}<span>${escHtml(val)}</span></button>`;
-    }).join('');
-  });
+  grid.querySelectorAll('.card').forEach((c, i) => c.style.animationDelay = `${i*0.06}s`);
 }
 
 function cardHTML(item) {
-  const count = takenCount(item);
-  const taken = count >= item.slots;
-  const mine = isMine(item);
-  const myReg = myRegs[item.id];
-  const othersCount = count - (mine ? 1 : 0);
-
+  const regs = getRegs(item);
+  const taken = regs.length >= item.slots;
   const imgHTML = item.image
     ? `<img class="card-img" src="${escHtml(item.image)}" alt="${escHtml(item.title)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="card-img-placeholder" style="display:none">${escHtml(item.emoji||'📦')}</div>`
     : `<div class="card-img-placeholder">${escHtml(item.emoji||'📦')}</div>`;
 
-  let regsHTML = '';
-  if (count > 0) {
-    let inner = '';
-    if (mine) {
-      inner += `<div class="my-reg-box">
-        <div class="my-reg-title">✓ Deine Reservierung</div>
-        <div class="my-reg-row">🎨 <span>${escHtml((myReg && myReg.filament) || '–')}</span></div>
-        <div class="my-reg-row">📦 <span class="muted">${escHtml((myReg && myReg.delivery) || '–')}</span></div>
-        <button class="cancel-link" onclick="askCancel('${escHtml(item.id)}')">✕ Stornieren</button>
-      </div>`;
-    }
-    if (othersCount > 0) {
-      inner += `<div class="reg-others" style="margin-top:0.5rem">+ ${othersCount} weitere${othersCount > 1 ? ' Personen' : ' Person'} eingetragen</div>`;
-    }
-    regsHTML = `<div class="registrations"><div class="reg-label">Reservierungen (${count}/${item.slots})</div>${inner}</div>`;
-  }
-
-  let actionHTML = '';
-  if (!mine) {
-    if (!taken && item.colors && availableFilaments(item).length === 0) {
-      actionHTML = `<p style="font-size:0.8rem;color:var(--muted);margin-top:0.75rem;text-align:center;">Für diesen Artikel sind aktuell keine Farben verfügbar.</p>`;
-    } else if (!taken) {
-      actionHTML = `
-        <div class="reserve-btn-wrap" id="btnWrap_${escHtml(item.id)}">
-          <button class="btn btn-accent btn-full btn-sm" onclick="showInlineForm('${escHtml(item.id)}')">Jetzt reservieren</button>
+  const regsHTML = regs.length > 0
+    ? `<div class="registrations">
+        <div class="reg-label">Reservierungen (${regs.length}/${item.slots})</div>
+        <div class="reg-list">${regs.map(r => `
+          <div class="reg-card">
+            <div class="reg-card-header">
+              <div class="reg-card-name">👤 ${escHtml(r.name)}</div>
+              <button class="btn btn-sm btn-danger" onclick="askUnreg('${escHtml(item.id)}','${escHtml(r.uid)}')">✕</button>
+            </div>
+            ${r.filament ? `<div class="reg-card-detail">🎨 <span>${escHtml(r.filament)}</span></div>` : ''}
+            ${r.delivery ? `<div class="reg-card-detail">📦 <span>${escHtml(r.delivery)}</span></div>` : ''}
+          </div>`).join('')}
         </div>
-        <div class="reserve-form" id="form_${escHtml(item.id)}" style="display:none">
-          <label>Filament</label>
-          <div class="fil-picker" id="fil_${escHtml(item.id)}"></div>
-          <input type="hidden" id="filval_${escHtml(item.id)}" value="" />
-          <label>Wie möchtest du es erhalten?<br>Hier kannst du Wünsche/Sonstiges abgeben.</label>
-          <textarea id="del_${escHtml(item.id)}" maxlength="500" placeholder="z.B. Abholung, Versand an: Musterstr. 1, 12345 Berlin…"></textarea>
-          <div class="reserve-form-err" id="err_${escHtml(item.id)}">Bitte alle Felder ausfüllen.</div>
-          <div class="reserve-form-btns">
-            <button class="btn btn-ghost btn-sm" onclick="hideInlineForm('${escHtml(item.id)}')">Abbrechen</button>
-            <button class="btn btn-accent btn-sm" onclick="confirmReserve('${escHtml(item.id)}')">Reservieren ✓</button>
-          </div>
-        </div>`;
-    } else {
-      actionHTML = `<p style="font-size:0.8rem;color:var(--danger);margin-top:0.75rem;text-align:center;">✕ Alle Plätze belegt</p>`;
-    }
-  }
+      </div>` : '';
 
-  return `<div class="card" id="card_${escHtml(item.id)}">
+  const statusBadge = item.locked
+    ? `<span class="badge badge-locked">🔒 Gesperrt</span>`
+    : `<span class="badge ${taken ? 'badge-taken' : 'badge-available'}">${taken ? '✕ Belegt' : '✓ Verfügbar'}</span>`;
+  const lockBtn = item.locked
+    ? `<button class="btn btn-sm btn-ghost" onclick="toggleLock('${escHtml(item.id)}')">🔓 Entsperren</button>`
+    : `<button class="btn btn-sm btn-ghost" onclick="toggleLock('${escHtml(item.id)}')">🔒 Sperren</button>`;
+
+  return `<div class="card ${item.locked?'card-locked':''}" id="card_${escHtml(item.id)}">
     ${imgHTML}
     <div class="card-body">
-      ${item.category ? `<div class="card-category">${escHtml(item.category)}</div>` : ''}
+      ${item.category?`<div class="card-category">${escHtml(item.category)}</div>`:''}
       <div class="card-title">${escHtml(item.title)}</div>
-      ${item.desc ? `<div class="card-desc">${escHtml(item.desc)}</div>` : ''}
+      ${item.desc?`<div class="card-desc">${escHtml(item.desc)}</div>`:''}
       <div class="card-meta">
-        <span class="badge ${taken ? 'badge-taken' : 'badge-available'}">${taken ? '✕ Belegt' : '✓ Verfügbar'}</span>
-        ${item.price ? `<span class="badge badge-price">💰 ${escHtml(item.price)}</span>` : ''}
-        ${item.slots > 1 ? `<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--muted)">👥 ${item.slots} Plätze</span>` : ''}
+        ${statusBadge}
+        ${item.price?`<span class="badge badge-price">💰 ${escHtml(item.price)}</span>`:''}
+        ${item.slots>1?`<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--muted)">👥 ${item.slots} Plätze</span>`:''}
+        ${item.colors?`<span class="badge" title="${escHtml(item.colors.join(', '))}" style="background:rgba(255,255,255,0.05);color:var(--muted)">🎨 ${item.colors.length} Farbe${item.colors.length===1?'':'n'}</span>`:''}
       </div>
       ${regsHTML}
-      ${actionHTML}
+    </div>
+    <div class="card-admin-actions">
+      <button class="btn btn-sm btn-ghost" onclick="openEdit('${escHtml(item.id)}')">✏ Bearbeiten</button>
+      ${lockBtn}
+      <button class="btn btn-sm btn-danger" onclick="askDelete('${escHtml(item.id)}')">🗑 Löschen</button>
     </div>
   </div>`;
 }
 
-function updateStats() {
-  const visible = items.filter(i => !i.locked);
-  document.getElementById('statTotal').textContent = visible.length;
-  document.getElementById('statAvail').textContent = visible.filter(i => takenCount(i) < i.slots).length;
-}
-
-function setFilter(filter, btn) {
-  currentFilter = filter;
+function setFilter(f, btn) {
+  currentFilter = f;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   render();
 }
 
-// ── INLINE FORM ──────────────────────────────────────────
-function showInlineForm(itemId) {
-  if (!myName) { pendingReserveId = itemId; openNameModal(true); return; }
-  const btn = document.getElementById(`btnWrap_${itemId}`), form = document.getElementById(`form_${itemId}`);
-  if (btn) btn.style.display = 'none';
-  if (form) form.style.display = 'flex';
+// ── ADD / EDIT / LOCK / DELETE ───────────────────────────
+function dbItem(item) { const { locked, ...rest } = item; if (rest.colors == null) delete rest.colors; return rest; }
+function itemPath(item) { return (item.locked ? 'hidden/' : 'items/') + item.id; }
+
+async function addItem() {
+  const title = document.getElementById('newTitle').value.trim();
+  if (!title) { toast('Bitte einen Titel eingeben.', 'error'); return; }
+  const colorsSel = readColorPicker('newColors');
+  if (colorsSel && colorsSel.length === 0) { toast('Bitte mindestens eine Farbe auswählen oder „Alle Farben“ wählen.', 'error'); return; }
+  const item = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    title,
+    desc: document.getElementById('newDesc').value.trim(),
+    category: document.getElementById('newCategory').value.trim(),
+    image: document.getElementById('newImage').value.trim(),
+    emoji: document.getElementById('newEmoji').value.trim() || '📦',
+    price: document.getElementById('newPrice').value.trim(),
+    slots: Math.max(1, parseInt(document.getElementById('newSlots').value, 10) || 1),
+    ...(colorsSel ? { colors: colorsSel } : {}),
+    created: Date.now()
+  };
+  try {
+    await db('items/' + item.id, 'PUT', item);
+    items.unshift({ ...item, locked: false });
+    render(); clearForm();
+    toast(`"${title}" hinzugefügt! ✓`, 'success');
+  } catch (e) { toast('Speichern fehlgeschlagen.', 'error'); }
 }
 
-function hideInlineForm(itemId) {
-  const btn = document.getElementById(`btnWrap_${itemId}`), form = document.getElementById(`form_${itemId}`);
-  if (btn) btn.style.display = '';
-  if (form) form.style.display = 'none';
-  const err = document.getElementById(`err_${itemId}`);
-  if (err) err.classList.remove('visible');
+function clearForm() {
+  ['newTitle','newDesc','newCategory','newImage','newEmoji','newPrice'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('newSlots').value = '1';
+  renderNewColorPicker(true);
 }
 
-function selectFilament(itemId, val, btn) {
-  document.getElementById(`filval_${itemId}`).value = val;
-  document.querySelectorAll(`#fil_${itemId} .fpick-btn`).forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  document.getElementById(`err_${itemId}`).classList.remove('visible');
+function askDelete(id) {
+  pendingDeleteId = id;
+  const item = items.find(i => i.id === id);
+  document.getElementById('deleteModalText').textContent = `"${item ? item.title : 'Dieser Artikel'}" wird unwiderruflich gelöscht.`;
+  openModal('deleteModal');
 }
 
-async function confirmReserve(itemId) {
-  const filament = document.getElementById(`filval_${itemId}`).value.trim();
-  const delivery = document.getElementById(`del_${itemId}`).value.trim();
-  const err = document.getElementById(`err_${itemId}`);
-  if (!filament || !delivery) { err.classList.add('visible'); return; }
-  err.classList.remove('visible');
+async function confirmDelete() {
+  if (!pendingDeleteId) return;
+  const id = pendingDeleteId;
+  const item = items.find(i => i.id === id);
+  try {
+    await db('', 'PATCH', { [`items/${id}`]: null, [`hidden/${id}`]: null, [`reservations/${id}`]: null, [`taken/${id}`]: null });
+    items = items.filter(i => i.id !== id);
+    delete reservations[id];
+    render();
+    toast(`"${item ? item.title : 'Artikel'}" gelöscht.`, 'success');
+  } catch (e) { toast('Löschen fehlgeschlagen.', 'error'); }
+  closeModal('deleteModal');
+  pendingDeleteId = null;
+}
 
-  const item = items.find(i => i.id === itemId);
+function askUnreg(itemId, uid) {
+  pendingUnreg = { itemId, uid };
+  const r = (reservations[itemId] || {})[uid];
+  document.getElementById('unregModalText').textContent = `Reservierung von "${r && r.name ? r.name : 'dieser Person'}" entfernen?`;
+  openModal('unregModal');
+}
+
+async function confirmUnreg() {
+  if (!pendingUnreg) return;
+  const { itemId, uid } = pendingUnreg;
+  const r = (reservations[itemId] || {})[uid];
+  try {
+    await db('', 'PATCH', { [`reservations/${itemId}/${uid}`]: null, [`taken/${itemId}/${uid}`]: null });
+    if (reservations[itemId]) delete reservations[itemId][uid];
+    render();
+    toast(`${r && r.name ? r.name : 'Reservierung'} entfernt.`, 'success');
+  } catch (e) { toast('Entfernen fehlgeschlagen.', 'error'); }
+  closeModal('unregModal');
+  pendingUnreg = null;
+}
+
+async function toggleLock(id) {
+  const item = items.find(i => i.id === id);
   if (!item) return;
-  if (item.colors && !item.colors.includes(filament)) { toast('Diese Farbe ist für diesen Artikel nicht verfügbar.', 'error'); return; }
+  const from = itemPath(item);
+  const to = (item.locked ? 'items/' : 'hidden/') + item.id;
   try {
-    const a = await getAuth();
-    myUid = a.uid;
-    // Aktuellen Stand prüfen, damit niemand über das Limit hinaus reserviert
-    const current = (await db(`taken/${itemId}`)) || {};
-    if (current[a.uid]) { toast('Du bist bereits eingetragen!', 'error'); await loadAll(); return; }
-    if (Object.keys(current).length >= item.slots) { toast('Leider schon belegt!', 'error'); await loadAll(); return; }
-
-    await db('', 'PATCH', {
-      [`reservations/${itemId}/${a.uid}`]: { name: myName.slice(0, 60), filament: filament.slice(0, 100), delivery: delivery.slice(0, 500) },
-      [`taken/${itemId}/${a.uid}`]: true
-    });
-    toast('Reserviert! 🎉', 'success');
-    await loadAll();
-  } catch (e) {
-    console.error(e);
-    toast('Reservieren fehlgeschlagen. Bitte erneut versuchen.', 'error');
-  }
+    await db('', 'PATCH', { [from]: null, [to]: dbItem(item) });
+    item.locked = !item.locked;
+    render();
+    toast(item.locked ? `"${item.title}" gesperrt.` : `"${item.title}" entsperrt.`, 'success');
+  } catch (e) { toast('Ändern fehlgeschlagen.', 'error'); }
 }
 
-// ── CANCEL ──────────────────────────────────────────────
-function askCancel(itemId) { cancellingItemId = itemId; openModal('cancelModal'); }
+function openEdit(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  editingId = id;
+  document.getElementById('editTitle').value = item.title;
+  document.getElementById('editDesc').value = item.desc || '';
+  document.getElementById('editPrice').value = item.price || '';
+  document.getElementById('editSlots').value = item.slots;
+  document.getElementById('editSlotsLabel').textContent = `Plätze (belegt: ${getRegs(item).length})`;
+  document.getElementById('editColorPicker').innerHTML = colorPickerHTML('editColors', item.colors || null);
+  openModal('editModal');
+  setTimeout(() => document.getElementById('editTitle').focus(), 200);
+}
 
-async function confirmCancel() {
-  const itemId = cancellingItemId;
-  closeModal('cancelModal');
-  cancellingItemId = null;
-  if (!itemId) return;
+async function saveEdit() {
+  if (!editingId) return;
+  const item = items.find(i => i.id === editingId);
+  if (!item) return;
+  const t = document.getElementById('editTitle').value.trim();
+  if (!t) { toast('Titel darf nicht leer sein.', 'error'); return; }
+  const s = parseInt(document.getElementById('editSlots').value, 10);
+  if (isNaN(s) || s < 1) { toast('Ungültige Anzahl.', 'error'); return; }
+  if (s < getRegs(item).length) { toast(`Mindestens ${getRegs(item).length} Plätze nötig.`, 'error'); return; }
+  const colorsSel = readColorPicker('editColors');
+  if (colorsSel && colorsSel.length === 0) { toast('Bitte mindestens eine Farbe auswählen oder „Alle Farben“ wählen.', 'error'); return; }
+  const changes = {
+    colors: colorsSel,
+    title: t,
+    desc: document.getElementById('editDesc').value.trim(),
+    price: document.getElementById('editPrice').value.trim(),
+    slots: s
+  };
   try {
-    const a = await getAuth();
-    await db('', 'PATCH', { [`reservations/${itemId}/${a.uid}`]: null, [`taken/${itemId}/${a.uid}`]: null });
-    toast('Reservierung storniert.', 'success');
-    await loadAll();
-  } catch (e) {
-    console.error(e);
-    toast('Stornieren fehlgeschlagen.', 'error');
-  }
+    await db(itemPath(item), 'PATCH', changes);
+    Object.assign(item, changes);
+    render();
+    closeModal('editModal');
+    toast('Aktualisiert ✓', 'success');
+    editingId = null;
+  } catch (e) { toast('Speichern fehlgeschlagen.', 'error'); }
 }
 
 // ── MODAL / TOAST / UTILS ────────────────────────────────
@@ -544,11 +810,15 @@ function escHtml(str) {
   return String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 }
 
-// ── INIT ────────────────────────────────────────────────
-updateHeaderName();
-loadAll();
-if (!myName) setTimeout(() => openNameModal(true), 800);
-document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.visible').forEach(m => m.classList.remove('visible')); });
+// ── INIT ─────────────────────────────────────────────────
+(function init() {
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.visible').forEach(m => m.classList.remove('visible')); });
+  try {
+    const stored = JSON.parse(sessionStorage.getItem('shopAdminAuth') || 'null');
+    if (stored && stored.refreshToken) { auth = stored; enterAdmin(); return; }
+  } catch (e) {}
+  document.getElementById('emailInput').focus();
+})();
 </script>
 </body>
 </html>
