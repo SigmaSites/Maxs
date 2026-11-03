@@ -105,8 +105,8 @@
     .modal h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 0.4rem; }
     .modal .modal-subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.25rem; }
     .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem; }
-    .modal input[type=text], .modal input[type=email], .modal input[type=password] { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.18s; }
-    .modal input[type=text]:focus, .modal input[type=email]:focus, .modal input[type=password]:focus { border-color: var(--accent); }
+    .modal input[type=text], .modal input[type=email], .modal input[type=password], .modal select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.18s; }
+    .modal input[type=text]:focus, .modal input[type=email]:focus, .modal input[type=password]:focus, .modal select:focus { border-color: var(--accent); }
     .modal input::placeholder { color: var(--muted); }
     .form { display: flex; flex-direction: column; gap: 0.5rem; }
     .form label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; margin-top: 0.4rem; }
@@ -146,7 +146,7 @@
 
   <div class="stats-bar">
     <div class="stat"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Farben</div></div>
-    <div class="stat"><div class="stat-value" id="statDual">0</div><div class="stat-label">Dualfarben</div></div>
+    <div class="stat"><div class="stat-value" id="statDual">0</div><div class="stat-label">Mehrfarbig</div></div>
     <div class="stat"><div class="stat-value" id="statMat">0</div><div class="stat-label">Materialien</div></div>
   </div>
 
@@ -176,10 +176,19 @@
         <input type="color" id="newPicker" value="#e8c97e" aria-label="Farbe wählen" />
         <input type="text" id="newHex" value="#E8C97E" maxlength="7" aria-label="HEX-Wert" />
       </div>
-      <label class="check"><input type="checkbox" id="newDual" /> Zweifarbig (Dual)</label>
+      <label for="newCount">Anzahl Farben</label>
+      <select id="newCount">
+        <option value="1">Einfarbig</option>
+        <option value="2">Zweifarbig (Dual)</option>
+        <option value="3">Dreifarbig (Tri)</option>
+      </select>
       <div class="color-row" id="dualPick" hidden>
         <input type="color" id="newPicker2" value="#4aa3ff" aria-label="Zweite Farbe wählen" />
         <input type="text" id="newHex2" value="#4AA3FF" maxlength="7" aria-label="Zweiter HEX-Wert" />
+      </div>
+      <div class="color-row" id="triPick" hidden>
+        <input type="color" id="newPicker3" value="#ff6b6b" aria-label="Dritte Farbe wählen" />
+        <input type="text" id="newHex3" value="#FF6B6B" maxlength="7" aria-label="Dritter HEX-Wert" />
       </div>
       <div class="form-err" id="addErr"></div>
     </div>
@@ -247,12 +256,15 @@ function setStatus(text, isError) { $('status').textContent = text; $('status').
 
 /* ===== Anzeige ===== */
 function cardHTML(item) {
-  const dual = Boolean(item.hex2);
-  const bg = dual ? `linear-gradient(var(--dual-angle), ${item.hex} 50%, ${item.hex2} 50%)` : item.hex;
+  const colors = [item.hex, item.hex2, item.hex3].filter(Boolean);
+  const n = colors.length;
+  const bg = n > 1
+    ? `linear-gradient(var(--dual-angle), ${colors.map((c, i) => `${c} ${i * 100 / n}% ${(i + 1) * 100 / n}%`).join(', ')})`
+    : item.hex;
   return `<div class="card"><div class="swatch" style="background:${bg}"></div><div class="card-body">
     <div class="card-category">${escHtml(item.material || 'Material unbekannt')}</div>
     <div class="card-title">${escHtml(item.color)}</div>
-    ${dual ? '<div class="card-meta"><span class="badge badge-price">◐ Dual</span></div>' : ''}
+    ${n > 1 ? `<div class="card-meta"><span class="badge badge-price">◐ ${n === 2 ? 'Dual' : 'Tri'}</span></div>` : ''}
     <button class="cancel-link" data-del="${escHtml(item.id)}">✕ Löschen</button></div></div>`;
 }
 
@@ -275,7 +287,7 @@ function render() {
   const words = $('search').value.toLowerCase().trim().split(/\s+/).filter(Boolean);
   const items = filaments.filter(f =>
     (!materialFilter || f.material === materialFilter) &&
-    words.every(w => `${f.color} ${f.material} ${f.hex} ${f.hex2}`.toLowerCase().includes(w))
+    words.every(w => `${f.color} ${f.material} ${f.hex} ${f.hex2} ${f.hex3}`.toLowerCase().includes(w))
   );
   const grid = $('grid');
   if (!items.length) {
@@ -454,16 +466,17 @@ async function load() {
   try {
     const entries = await readEntries();
     filaments = entries.map(([id, value]) => {
-      const codes = [value?.hex, value?.hex2]
+      const codes = [value?.hex, value?.hex2, value?.hex3]
         .filter(v => typeof v === 'string')
         .flatMap(v => v.match(/#(?:[0-9a-f]{6}|[0-9a-f]{3})\b/gi) || [])
         .map(h => h.toUpperCase())
-        .slice(0, 2);
+        .slice(0, 3);
       return {
         id,
         color: typeof value?.color === 'string' ? value.color : id,
         hex: codes[0] || '',
         hex2: codes[1] || '',
+        hex3: codes[2] || '',
         material: typeof value?.material === 'string' ? value.material : ''
       };
     }).filter(f => f.hex).sort((a, b) => a.color.localeCompare(b.color, 'de'));
@@ -490,20 +503,27 @@ function bindPair(pickerId, hexId) {
 }
 bindPair('newPicker', 'newHex');
 bindPair('newPicker2', 'newHex2');
-$('newDual').addEventListener('change', () => { $('dualPick').hidden = !$('newDual').checked; });
+bindPair('newPicker3', 'newHex3');
+$('newCount').addEventListener('change', () => {
+  const n = Number($('newCount').value);
+  $('dualPick').hidden = n < 2;
+  $('triPick').hidden = n < 3;
+});
 
 async function saveColor() {
   const color = $('newColor').value.trim();
   const material = $('newMaterial').value.trim();
   let hex = $('newHex').value.trim().toUpperCase();
   if (hex && !hex.startsWith('#')) hex = '#' + hex;
-  const dual = $('newDual').checked;
-  let hex2 = dual ? $('newHex2').value.trim().toUpperCase() : '';
-  if (hex2 && !hex2.startsWith('#')) hex2 = '#' + hex2;
+  const count = Number($('newCount').value);
+  const fix = v => { v = v.trim().toUpperCase(); return v && !v.startsWith('#') ? '#' + v : v; };
+  const hex2 = count >= 2 ? fix($('newHex2').value) : '';
+  const hex3 = count >= 3 ? fix($('newHex3').value) : '';
 
   if (!color) return addError('Bitte einen Farbnamen eingeben.');
   if (!validHex(hex)) return addError('Der HEX-Wert ist ungültig (z. B. #FF8800).');
-  if (dual && !validHex(hex2)) return addError('Der zweite HEX-Wert ist ungültig.');
+  if (count >= 2 && !validHex(hex2)) return addError('Der zweite HEX-Wert ist ungültig.');
+  if (count >= 3 && !validHex(hex3)) return addError('Der dritte HEX-Wert ist ungültig.');
   if (filaments.some(f => f.color.toLowerCase() === color.toLowerCase() && f.material === material)) return addError('Diese Farbe gibt es mit diesem Material schon.');
   const base = baseUrl();
   if (!/^https:\/\/.+/.test(base)) return addError('DATABASE_URL fehlt im Code.');
@@ -513,7 +533,7 @@ async function saveColor() {
   try {
     const entries = await readEntries();
     const values = entries.map(([, v]) => v);
-    values.push(dual ? { color, material, hex, hex2 } : { color, material, hex });
+    values.push({ color, material, hex, ...(hex2 ? { hex2 } : {}), ...(hex3 ? { hex3 } : {}) });
     await writeList(values);
     $('newColor').value = '';
     closeModal('addModal');
@@ -570,4 +590,4 @@ restoreSession();
 load().then(ok => { if (ok) setInterval(load, AKTUALISIERUNG_SEK * 1000); });
 </script>
 </body>
-  </html>
+</html>
