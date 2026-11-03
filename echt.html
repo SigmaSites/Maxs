@@ -247,11 +247,19 @@ async function db(path, method = 'GET', body) {
 }
 
 // ── DATA ────────────────────────────────────────────────
+function filLabel(f) { return f.color + ' \u2013 ' + f.material; }
+function normColors(c) {
+  const arr = Array.isArray(c) ? c : (c && typeof c === 'object' ? Object.values(c) : null);
+  const list = arr ? arr.filter(x => typeof x === 'string') : [];
+  return list.length ? list : null;
+}
+// Nur die Farben, die für diesen Artikel freigegeben sind (ohne Einschränkung: alle)
+function availableFilaments(item) { return item.colors ? filaments.filter(f => item.colors.includes(filLabel(f))) : filaments; }
 function toList(v) { return v == null ? [] : (Array.isArray(v) ? v : Object.values(v)).filter(Boolean); }
 function toItems(v) {
   if (v == null) return [];
   const entries = Array.isArray(v) ? v.map((x, i) => [String(i), x]) : Object.entries(v);
-  return entries.filter(([, x]) => x && typeof x === 'object').map(([k, x]) => ({ ...x, id: String(x.id !== undefined ? x.id : k) }));
+  return entries.filter(([, x]) => x && typeof x === 'object').map(([k, x]) => ({ ...x, id: String(x.id !== undefined ? x.id : k), colors: normColors(x.colors) }));
 }
 function takenCount(item) { return takenMap[item.id] ? Object.keys(takenMap[item.id]).length : 0; }
 function isMine(item) { return !!(myUid && takenMap[item.id] && takenMap[item.id][myUid]); }
@@ -352,7 +360,7 @@ function render() {
   filtered.forEach(item => {
     const picker = document.getElementById(`fil_${item.id}`);
     if (!picker) return;
-    picker.innerHTML = filaments.map(f => {
+    picker.innerHTML = availableFilaments(item).map(f => {
       const val = f.color + ' \u2013 ' + f.material;
       const dot = f.hex2
         ? `<span class="fpick-dot dual" style="--c1:${escHtml(f.hex||'#888')};--c2:${escHtml(f.hex2)}"></span>`
@@ -392,7 +400,9 @@ function cardHTML(item) {
 
   let actionHTML = '';
   if (!mine) {
-    if (!taken) {
+    if (!taken && item.colors && availableFilaments(item).length === 0) {
+      actionHTML = `<p style="font-size:0.8rem;color:var(--muted);margin-top:0.75rem;text-align:center;">Für diesen Artikel sind aktuell keine Farben verfügbar.</p>`;
+    } else if (!taken) {
       actionHTML = `
         <div class="reserve-btn-wrap" id="btnWrap_${escHtml(item.id)}">
           <button class="btn btn-accent btn-full btn-sm" onclick="showInlineForm('${escHtml(item.id)}')">Jetzt reservieren</button>
@@ -476,6 +486,7 @@ async function confirmReserve(itemId) {
 
   const item = items.find(i => i.id === itemId);
   if (!item) return;
+  if (item.colors && !item.colors.includes(filament)) { toast('Diese Farbe ist für diesen Artikel nicht verfügbar.', 'error'); return; }
   try {
     const a = await getAuth();
     myUid = a.uid;
