@@ -180,16 +180,16 @@
       <select id="newCount">
         <option value="1">Einfarbig</option>
         <option value="2">Zweifarbig (Dual)</option>
-        /*<option value="3">Dreifarbig (Tri)</option>*/
+        <option value="3">Dreifarbig (Tri)</option>
       </select>
       <div class="color-row" id="dualPick" hidden>
         <input type="color" id="newPicker2" value="#4aa3ff" aria-label="Zweite Farbe wählen" />
         <input type="text" id="newHex2" value="#4AA3FF" maxlength="7" aria-label="Zweiter HEX-Wert" />
       </div>
-      /*<div class="color-row" id="triPick" hidden>
+      <div class="color-row" id="triPick" hidden>
         <input type="color" id="newPicker3" value="#ff6b6b" aria-label="Dritte Farbe wählen" />
         <input type="text" id="newHex3" value="#FF6B6B" maxlength="7" aria-label="Dritter HEX-Wert" />
-      </div>*/
+      </div>
       <div class="form-err" id="addErr"></div>
     </div>
     <div class="modal-actions">
@@ -256,7 +256,7 @@ function setStatus(text, isError) { $('status').textContent = text; $('status').
 
 /* ===== Anzeige ===== */
 function cardHTML(item) {
-  const colors = [item.hex, item.hex2/*, item.hex3*/].filter(Boolean);
+  const colors = [item.hex, item.hex2, item.hex3].filter(Boolean);
   const n = colors.length;
   const bg = n > 1
     ? `linear-gradient(var(--dual-angle), ${colors.map((c, i) => `${c} ${i * 100 / n}% ${(i + 1) * 100 / n}%`).join(', ')})`
@@ -264,7 +264,7 @@ function cardHTML(item) {
   return `<div class="card"><div class="swatch" style="background:${bg}"></div><div class="card-body">
     <div class="card-category">${escHtml(item.material || 'Material unbekannt')}</div>
     <div class="card-title">${escHtml(item.color)}</div>
-    ${n > 1 ? `<div class="card-meta"><span class="badge badge-price">◐ ${n === 2 ? 'Dual'/* : 'Tri'*/}</span></div>` : ''}
+    ${n > 1 ? `<div class="card-meta"><span class="badge badge-price">◐ ${n === 2 ? 'Dual' : 'Tri'}</span></div>` : ''}
     <button class="cancel-link" data-del="${escHtml(item.id)}">✕ Löschen</button></div></div>`;
 }
 
@@ -287,7 +287,7 @@ function render() {
   const words = $('search').value.toLowerCase().trim().split(/\s+/).filter(Boolean);
   const items = filaments.filter(f =>
     (!materialFilter || f.material === materialFilter) &&
-    words.every(w => `${f.color} ${f.material} ${f.hex} ${f.hex2}/* ${f.hex3}*/`.toLowerCase().includes(w))
+    words.every(w => `${f.color} ${f.material} ${f.hex} ${f.hex2} ${f.hex3}`.toLowerCase().includes(w))
   );
   const grid = $('grid');
   if (!items.length) {
@@ -466,17 +466,17 @@ async function load() {
   try {
     const entries = await readEntries();
     filaments = entries.map(([id, value]) => {
-      const codes = [value?.hex, value?.hex2/*, value?.hex3*/]
+      const codes = [value?.hex, value?.hex2, value?.hex3]
         .filter(v => typeof v === 'string')
         .flatMap(v => v.match(/#(?:[0-9a-f]{6}|[0-9a-f]{3})\b/gi) || [])
         .map(h => h.toUpperCase())
-        .slice(0, 2);
+        .slice(0, 3);
       return {
         id,
         color: typeof value?.color === 'string' ? value.color : id,
         hex: codes[0] || '',
         hex2: codes[1] || '',
-        /*hex3: codes[2] || '',*/
+        hex3: codes[2] || '',
         material: typeof value?.material === 'string' ? value.material : ''
       };
     }).filter(f => f.hex).sort((a, b) => a.color.localeCompare(b.color, 'de'));
@@ -503,7 +503,7 @@ function bindPair(pickerId, hexId) {
 }
 bindPair('newPicker', 'newHex');
 bindPair('newPicker2', 'newHex2');
-/*bindPair('newPicker3', 'newHex3');*/
+bindPair('newPicker3', 'newHex3');
 $('newCount').addEventListener('change', () => {
   const n = Number($('newCount').value);
   $('dualPick').hidden = n < 2;
@@ -518,7 +518,7 @@ async function saveColor() {
   const count = Number($('newCount').value);
   const fix = v => { v = v.trim().toUpperCase(); return v && !v.startsWith('#') ? '#' + v : v; };
   const hex2 = count >= 2 ? fix($('newHex2').value) : '';
-  /*const hex3 = count >= 3 ? fix($('newHex3').value) : '';*/
+  const hex3 = count >= 3 ? fix($('newHex3').value) : '';
 
   if (!color) return addError('Bitte einen Farbnamen eingeben.');
   if (!validHex(hex)) return addError('Der HEX-Wert ist ungültig (z. B. #FF8800).');
@@ -533,7 +533,7 @@ async function saveColor() {
   try {
     const entries = await readEntries();
     const values = entries.map(([, v]) => v);
-    values.push({ color, material, hex, ...(hex2 ? { hex2 } : {})/*, ...(hex3 ? { hex3 } : {})*/ });
+    values.push({ color, material, hex, ...(hex2 ? { hex2 } : {}), ...(hex3 ? { hex3 } : {}) });
     await writeList(values);
     $('newColor').value = '';
     closeModal('addModal');
