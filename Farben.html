@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Farben - Max's</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/maxs-icon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/maxs-icon-192.png">
+  <link rel="shortcut icon" href="assets/maxs-icon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/maxs-apple-icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f0e0c; --surface: #1a1916; --surface2: #242220; --border: #2e2c28;
+      --accent: #e8c97e; --text: #f0ece4; --muted: #7a7468;
+      --danger: #c0614a; --success: #6a9e72; --radius: 12px;
+      --dual-angle: 135deg; /* Richtung der Teilung bei Dualfarben */
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    [hidden] { display: none !important; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1000; opacity: 0.6;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    }
+
+    /* Header */
+    header { border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 70px; position: sticky; top: 0; background: rgba(15,14,12,0.92); backdrop-filter: blur(12px); z-index: 100; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; letter-spacing: -0.02em; color: var(--accent); }
+    .logo span { color: var(--text); }
+    .header-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500; transition: all 0.18s ease; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+    .btn-accent { background: var(--accent); color: #0f0e0c; font-weight: 600; }
+    .btn-accent:hover { background: #f0d590; transform: translateY(-1px); }
+    .btn-accent:disabled { opacity: 0.5; cursor: wait; transform: none; }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+    .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: white; }
+    .btn-danger:disabled { opacity: 0.5; cursor: wait; }
+    .cancel-link { margin-top: 0.85rem; font-size: 0.78rem; color: var(--danger); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 0; display: inline-block; }
+    .cancel-link:hover { text-decoration: underline; }
+    .card-actions { display: flex; gap: 1.1rem; flex-wrap: wrap; margin-top: 0.85rem; }
+    .card-actions .cancel-link { margin-top: 0; }
+    .hide-link { font-size: 0.78rem; color: var(--accent); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 0; display: inline-block; }
+    .hide-link:hover { text-decoration: underline; }
+    .card.is-hidden { opacity: 0.55; border-style: dashed; }
+    .card.is-hidden:hover { opacity: 0.85; }
+    .badge-hidden { background: rgba(255,255,255,0.06); color: var(--muted); }
+    .btn-full { width: 100%; justify-content: center; }
+
+    /* Layout */
+    main { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
+    .hero { text-align: center; padding: 2rem 0 3rem; }
+    .hero-tag { display: inline-block; background: rgba(232,201,126,0.1); border: 1px solid rgba(232,201,126,0.25); color: var(--accent); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.3rem 0.9rem; border-radius: 100px; margin-bottom: 1.25rem; }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 1rem; }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero p { color: var(--muted); font-size: 1.05rem; max-width: 500px; margin: 0 auto; line-height: 1.7; }
+    .stats-bar { display: flex; justify-content: center; gap: 3rem; padding: 1.5rem 2rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
+    .stat { text-align: center; }
+    .stat-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.1rem; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+    .section-header h2 { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; }
+    .filter-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tab { padding: 0.35rem 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-size: 0.8rem; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+    .tab.active, .tab:hover { background: var(--surface); color: var(--text); border-color: rgba(232,201,126,0.3); }
+    .tab.active { color: var(--accent); }
+    .search { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.18s; margin-bottom: 0.75rem; }
+    .search:focus { border-color: var(--accent); }
+    .search::placeholder { color: var(--muted); }
+    .status { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .status:empty { display: none; }
+    .status.error { color: var(--danger); }
+
+    /* Karten */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1.5rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s, transform 0.2s; animation: fadeUp 0.4s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .card:hover { border-color: rgba(232,201,126,0.3); transform: translateY(-2px); }
+    .swatch { width: 100%; aspect-ratio: 16/9; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .card-body { padding: 1.25rem; }
+    .card-category { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 500; margin-bottom: 0.4rem; }
+    .card-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 0.4rem; line-height: 1.2; overflow-wrap: anywhere; }
+    .card-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500; }
+    .badge-price { background: rgba(232,201,126,0.1); color: var(--accent); }
+
+    /* Kategorien */
+    .cat-section { grid-column: 1 / -1; margin-top: 1rem; }
+    .cat-section:first-child { margin-top: 0; }
+    .cat-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.25rem; }
+    .cat-label { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .cat-line { flex: 1; height: 1px; background: var(--border); }
+    .empty { text-align: center; padding: 5rem 2rem; color: var(--muted); }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+    .empty h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text); margin-bottom: 0.5rem; }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 1100; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.1rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem; animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fadeOut { to { opacity: 0; transform: translateX(20px); } }
+    .toast.success { border-color: rgba(106,158,114,0.4); }
+    .toast.error { border-color: rgba(192,97,74,0.4); }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay.visible { opacity: 1; pointer-events: all; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; width: 100%; max-width: 400px; transform: translateY(20px); transition: transform 0.2s; max-height: 100%; overflow-y: auto; }
+    .modal-overlay.visible .modal { transform: translateY(0); }
+    .modal p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6; }
+    .modal h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 0.4rem; }
+    .modal .modal-subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.25rem; }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem; }
+    .modal input[type=text], .modal input[type=email], .modal input[type=password], .modal select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.18s; }
+    .modal input[type=text]:focus, .modal input[type=email]:focus, .modal input[type=password]:focus, .modal select:focus { border-color: var(--accent); }
+    .modal input::placeholder { color: var(--muted); }
+    .form { display: flex; flex-direction: column; gap: 0.5rem; }
+    .form label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; margin-top: 0.4rem; }
+    .color-row { display: flex; gap: 0.5rem; align-items: center; }
+    .color-row input[type=color] { flex: none; width: 46px; height: 42px; padding: 3px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+    .color-row input[type=text] { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .check { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem; font-size: 0.875rem; color: var(--text); cursor: pointer; text-transform: none; letter-spacing: 0; }
+    .check input { accent-color: var(--accent); width: 16px; height: 16px; }
+    .form-err { font-size: 0.78rem; color: var(--danger); display: none; }
+    .form-err.visible { display: block; }
+
+    @media (max-width: 600px) {
+      header { padding: 0 1rem; }
+      main { padding: 2rem 1rem; }
+      .stats-bar { gap: 1.5rem; padding: 1.25rem 1rem; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; }
+      .card-body { padding: 0.9rem; }
+      .card-title { font-size: 1.05rem; }
+    }
+    /* LOGO */
+    .logo { display: flex; align-items: center; gap: 0.7rem; }
+    .logo-img { height: 24px; width: auto; display: block; }
+    @media (max-width: 480px) { .logo-img { height: 20px; } }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo"><img class="logo-img" alt="Max's" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNTUuNyAxMDAuMCIgd2lkdGg9IjM1NiIgaGVpZ2h0PSIxMDAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iTWF44oCZcyI+CiAgPHBhdGggdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTEuOTEgOTYuMTcpIHNjYWxlKDEuMzA0MykiIGQ9Ik05My43IC03MC44Vi02OC44UTkwLjcgLTY4LjcgODkuMTUgLTY4LjA1MDAwMDAwMDAwMDAxUTg3LjYwMDAwMDAwMDAwMDAxIC02Ny40IDg3LjEwMDAwMDAwMDAwMDAxIC02NS42NVE4Ni42MDAwMDAwMDAwMDAwMSAtNjMuOTAwMDAwMDAwMDAwMDA2IDg2LjYwMDAwMDAwMDAwMDAxIC02MC4yVi0xMC42MDAwMDAwMDAwMDAwMDFRODYuNjAwMDAwMDAwMDAwMDEgLTcuMCA4Ny4xNSAtNS4yUTg3LjcgLTMuNDAwMDAwMDAwMDAwMDAwNCA4OS4yIC0yLjgwMDAwMDAwMDAwMDAwMDNROTAuNyAtMi4yIDkzLjcgLTIuMFYwLjBROTAuNjAwMDAwMDAwMDAwMDEgLTAuMiA4NS44MDAwMDAwMDAwMDAwMSAtMC4yNVE4MS4wIC0wLjMwMDAwMDAwMDAwMDAwMDA0IDc2LjAgLTAuMzAwMDAwMDAwMDAwMDAwMDRRNzAuNjAwMDAwMDAwMDAwMDEgLTAuMzAwMDAwMDAwMDAwMDAwMDQgNjUuODUwMDAwMDAwMDAwMDEgLTAuMjVRNjEuMSAtMC4yIDU4LjIgMC4wVi0yLjBRNjEuNiAtMi4yIDYzLjM1MDAwMDAwMDAwMDAxIC0yLjgwMDAwMDAwMDAwMDAwMDNRNjUuMTAwMDAwMDAwMDAwMDEgLTMuNDAwMDAwMDAwMDAwMDAwNCA2NS43IC01LjJRNjYuMyAtNy4wIDY2LjMgLTEwLjYwMDAwMDAwMDAwMDAwMVYtNjEuN0w0Mi4yIC0wLjFINDAuNkwxMi40IC02NC4zVi0xOS42UTEyLjQgLTEyLjkgMTIuOTUgLTkuMzUwMDAwMDAwMDAwMDAxUTEzLjUgLTUuODAwMDAwMDAwMDAwMDAxIDE1LjY1IC00LjI1UTE3LjggLTIuNyAyMi41IC0yLjBWMC4wUTIwLjUgLTAuMiAxNy4zIC0wLjI1UTE0LjEwMDAwMDAwMDAwMDAwMSAtMC4zMDAwMDAwMDAwMDAwMDAwNCAxMS4zIC0wLjMwMDAwMDAwMDAwMDAwMDA0UTkuMSAtMC4zMDAwMDAwMDAwMDAwMDAwNCA2LjggLTAuMjVRNC41IC0wLjIgMy4wIDAuMFYtMi4wUTYuMTAwMDAwMDAwMDAwMDAwNSAtMi43IDcuNiAtNC4xNVE5LjEgLTUuNjAwMDAwMDAwMDAwMDAwNSA5LjYwMDAwMDAwMDAwMDAwMSAtOC44UTEwLjEwMDAwMDAwMDAwMDAwMSAtMTIuMCAxMC4xMDAwMDAwMDAwMDAwMDEgLTE3LjZWLTYwLjJRMTAuMTAwMDAwMDAwMDAwMDAxIC02My45MDAwMDAwMDAwMDAwMDYgOS42MDAwMDAwMDAwMDAwMDEgLTY1LjY1UTkuMSAtNjcuNCA3LjU1IC02OC4wNTAwMDAwMDAwMDAwMVE2LjAgLTY4LjcgMy4wIC02OC44Vi03MC44UTQuNSAtNzAuNyA2LjggLTcwLjZROS4xIC03MC41IDExLjMgLTcwLjVRMTcuMSAtNzAuNSAyMi40MDAwMDAwMDAwMDAwMDIgLTcwLjZRMjcuNzAwMDAwMDAwMDAwMDAzIC03MC43IDMyLjAgLTcwLjhMNTAuOTAwMDAwMDAwMDAwMDA2IC0yOC4zTDY3LjMgLTcwLjVINzYuMFE4MS4wIC03MC41IDg1LjgwMDAwMDAwMDAwMDAxIC03MC42UTkwLjYwMDAwMDAwMDAwMDAxIC03MC43IDkzLjcgLTcwLjhaIE0xMTEuNCAwLjcwMDAwMDAwMDAwMDAwMDFRMTA2LjcwMDAwMDAwMDAwMDAyIDAuNzAwMDAwMDAwMDAwMDAwMSAxMDMuNzAwMDAwMDAwMDAwMDIgLTEuMVExMDAuNzAwMDAwMDAwMDAwMDIgLTIuOTAwMDAwMDAwMDAwMDAwNCA5OS4zNTAwMDAwMDAwMDAwMiAtNS44MDAwMDAwMDAwMDAwMDFROTguMDAwMDAwMDAwMDAwMDEgLTguNzAwMDAwMDAwMDAwMDAxIDk4LjAwMDAwMDAwMDAwMDAxIC0xMS45UTk4LjAwMDAwMDAwMDAwMDAxIC0xNi4xIDk5LjkgLTE4Ljc1UTEwMS44MDAwMDAwMDAwMDAwMSAtMjEuNDAwMDAwMDAwMDAwMDAyIDEwNC44NTAwMDAwMDAwMDAwMSAtMjMuMDUwMDAwMDAwMDAwMDA0UTEwNy45IC0yNC43MDAwMDAwMDAwMDAwMDMgMTExLjMwMDAwMDAwMDAwMDAxIC0yNS44MDAwMDAwMDAwMDAwMDRRMTE0LjcwMDAwMDAwMDAwMDAyIC0yNi45MDAwMDAwMDAwMDAwMDIgMTE3Ljc1MDAwMDAwMDAwMDAxIC0yNy45NTAwMDAwMDAwMDAwMDNRMTIwLjgwMDAwMDAwMDAwMDAxIC0yOS4wIDEyMi43MDAwMDAwMDAwMDAwMiAtMzAuNDUwMDAwMDAwMDAwMDAzUTEyNC42MDAwMDAwMDAwMDAwMSAtMzEuOTAwMDAwMDAwMDAwMDAyIDEyNC42MDAwMDAwMDAwMDAwMSAtMzQuMlYtNDMuMVExMjQuNjAwMDAwMDAwMDAwMDEgLTQ0LjcgMTI0LjA1MDAwMDAwMDAwMDAxIC00Ni42UTEyMy41MDAwMDAwMDAwMDAwMSAtNDguNSAxMjIuMDAwMDAwMDAwMDAwMDEgLTQ5LjkwMDAwMDAwMDAwMDAwNlExMjAuNTAwMDAwMDAwMDAwMDEgLTUxLjMwMDAwMDAwMDAwMDAwNCAxMTcuNTAwMDAwMDAwMDAwMDEgLTUxLjMwMDAwMDAwMDAwMDAwNFExMTUuOSAtNTEuMzAwMDAwMDAwMDAwMDA0IDExNC40NTAwMDAwMDAwMDAwMiAtNTAuODUwMDAwMDAwMDAwMDFRMTEzLjAwMDAwMDAwMDAwMDAxIC01MC40MDAwMDAwMDAwMDAwMDYgMTExLjkgLTQ5LjZRMTE1LjQgLTQ4LjMwMDAwMDAwMDAwMDAwNCAxMTcuMCAtNDUuOTVRMTE4LjYwMDAwMDAwMDAwMDAxIC00My42IDExOC42MDAwMDAwMDAwMDAwMSAtNDAuODAwMDAwMDAwMDAwMDA0UTExOC42MDAwMDAwMDAwMDAwMSAtMzYuODAwMDAwMDAwMDAwMDA0IDExNS44MDAwMDAwMDAwMDAwMSAtMzQuNVExMTMuMDAwMDAwMDAwMDAwMDEgLTMyLjIgMTA5LjIwMDAwMDAwMDAwMDAyIC0zMi4yUTEwNS4yMDAwMDAwMDAwMDAwMiAtMzIuMiAxMDMuMDAwMDAwMDAwMDAwMDEgLTM0LjdRMTAwLjgwMDAwMDAwMDAwMDAxIC0zNy4yIDEwMC44MDAwMDAwMDAwMDAwMSAtNDAuOTAwMDAwMDAwMDAwMDA2UTEwMC44MDAwMDAwMDAwMDAwMSAtNDQuMCAxMDIuMzUwMDAwMDAwMDAwMDEgLTQ2LjE1MDAwMDAwMDAwMDAwNlExMDMuOSAtNDguMzAwMDAwMDAwMDAwMDA0IDEwNy4wMDAwMDAwMDAwMDAwMSAtNTAuMVExMTAuMDAwMDAwMDAwMDAwMDEgLTUxLjgwMDAwMDAwMDAwMDAwNCAxMTQuMjAwMDAwMDAwMDAwMDIgLTUyLjU1MDAwMDAwMDAwMDAwNFExMTguNCAtNTMuMzAwMDAwMDAwMDAwMDA0IDEyMy4wMDAwMDAwMDAwMDAwMSAtNTMuMzAwMDAwMDAwMDAwMDA0UTEyNy45IC01My4zMDAwMDAwMDAwMDAwMDQgMTMyLjEwMDAwMDAwMDAwMDAyIC01Mi4zNTAwMDAwMDAwMDAwMVExMzYuMyAtNTEuNDAwMDAwMDAwMDAwMDA2IDEzOS4zIC00OC4zMDAwMDAwMDAwMDAwMDRRMTQxLjQgLTQ2LjEgMTQyLjAgLTQyLjhRMTQyLjYwMDAwMDAwMDAwMDAyIC0zOS41IDE0Mi42MDAwMDAwMDAwMDAwMiAtMzQuMzAwMDAwMDAwMDAwMDA0Vi03LjVRMTQyLjYwMDAwMDAwMDAwMDAyIC01LjAgMTQyLjk1MDAwMDAwMDAwMDAyIC00LjFRMTQzLjMgLTMuMiAxNDQuMjAwMDAwMDAwMDAwMDIgLTMuMlExNDUuMCAtMy4yIDE0NS43NSAtMy43UTE0Ni41IC00LjIgMTQ3LjIwMDAwMDAwMDAwMDAyIC00LjdMMTQ4LjIwMDAwMDAwMDAwMDAyIC0zLjBRMTQ2LjAgLTEuMSAxNDIuNzUgLTAuMlExMzkuNSAwLjcwMDAwMDAwMDAwMDAwMDEgMTM1LjkgMC43MDAwMDAwMDAwMDAwMDAxUTEzMS42MDAwMDAwMDAwMDAwMiAwLjcwMDAwMDAwMDAwMDAwMDEgMTI5LjI1IC0wLjM1MDAwMDAwMDAwMDAwMDAzUTEyNi45IC0xLjQwMDAwMDAwMDAwMDAwMDEgMTI1Ljk1MDAwMDAwMDAwMDAyIC0zLjE1MDAwMDAwMDAwMDAwMDRRMTI1LjAwMDAwMDAwMDAwMDAxIC00LjkgMTI0LjkgLTYuOVExMjIuODAwMDAwMDAwMDAwMDEgLTMuNiAxMTkuNjUgLTEuNDVRMTE2LjUwMDAwMDAwMDAwMDAxIDAuNzAwMDAwMDAwMDAwMDAwMSAxMTEuNCAwLjcwMDAwMDAwMDAwMDAwMDFaTTEyMC45IC03LjMwMDAwMDAwMDAwMDAwMVExMjIuMDAwMDAwMDAwMDAwMDEgLTcuMzAwMDAwMDAwMDAwMDAxIDEyMi44NTAwMDAwMDAwMDAwMiAtNy42NVExMjMuNzAwMDAwMDAwMDAwMDIgLTguMCAxMjQuNjAwMDAwMDAwMDAwMDEgLTkuMFYtMzAuMVExMjMuOSAtMjguOCAxMjIuNzUgLTI3LjU1UTEyMS42MDAwMDAwMDAwMDAwMSAtMjYuMyAxMjAuNCAtMjUuMFExMTkuMjAwMDAwMDAwMDAwMDIgLTIzLjcwMDAwMDAwMDAwMDAwMyAxMTguMTUgLTIyLjIwMDAwMDAwMDAwMDAwM1ExMTcuMTAwMDAwMDAwMDAwMDEgLTIwLjcwMDAwMDAwMDAwMDAwMyAxMTYuNDUwMDAwMDAwMDAwMDIgLTE4Ljc1UTExNS44MDAwMDAwMDAwMDAwMSAtMTYuOCAxMTUuODAwMDAwMDAwMDAwMDEgLTE0LjIwMDAwMDAwMDAwMDAwMVExMTUuODAwMDAwMDAwMDAwMDEgLTEwLjQgMTE3LjI1MDAwMDAwMDAwMDAxIC04Ljg1MDAwMDAwMDAwMDAwMVExMTguNzAwMDAwMDAwMDAwMDIgLTcuMzAwMDAwMDAwMDAwMDAxIDEyMC45IC03LjMwMDAwMDAwMDAwMDAwMVogTTE3NS43MDAwMDAwMDAwMDAwMiAtNTEuOTAwMDAwMDAwMDAwMDA2Vi00OS44MDAwMDAwMDAwMDAwMDRRMTczLjcwMDAwMDAwMDAwMDAyIC00OS44MDAwMDAwMDAwMDAwMDQgMTcyLjk1MDAwMDAwMDAwMDAyIC00OC45MDAwMDAwMDAwMDAwMDZRMTcyLjIwMDAwMDAwMDAwMDAyIC00OC4wIDE3My4yMDAwMDAwMDAwMDAwMiAtNDYuNDAwMDAwMDAwMDAwMDA2TDE4MS45IC0zMy4zMDAwMDAwMDAwMDAwMDRMMTgzLjYwMDAwMDAwMDAwMDAyIC0zNS4zMDAwMDAwMDAwMDAwMDRRMTg2LjYwMDAwMDAwMDAwMDAyIC0zOS4wIDE4Ny4yMDAwMDAwMDAwMDAwMiAtNDIuMlExODcuOCAtNDUuNDAwMDAwMDAwMDAwMDA2IDE4Ni4yMDAwMDAwMDAwMDAwMiAtNDcuNVExODQuNjAwMDAwMDAwMDAwMDIgLTQ5LjYgMTgxLjAgLTQ5LjkwMDAwMDAwMDAwMDAwNlYtNTEuOTAwMDAwMDAwMDAwMDA2UTE4NC4xMDAwMDAwMDAwMDAwMiAtNTEuODAwMDAwMDAwMDAwMDA0IDE4Ny45MDAwMDAwMDAwMDAwMyAtNTEuN1ExOTEuNzAwMDAwMDAwMDAwMDIgLTUxLjYgMTk0LjMgLTUxLjZRMTk2LjUgLTUxLjYgMTk4LjEwMDAwMDAwMDAwMDAyIC01MS43UTE5OS43MDAwMDAwMDAwMDAwMiAtNTEuODAwMDAwMDAwMDAwMDA0IDIwMS4wIC01MS45MDAwMDAwMDAwMDAwMDZWLTQ5LjkwMDAwMDAwMDAwMDAwNlExOTguOCAtNDguOTAwMDAwMDAwMDAwMDA2IDE5Ni40NTAwMDAwMDAwMDAwMiAtNDYuODAwMDAwMDAwMDAwMDA0UTE5NC4xMDAwMDAwMDAwMDAwMiAtNDQuNyAxOTEuNjAwMDAwMDAwMDAwMDIgLTQxLjdMMTgzLjAgLTMxLjcwMDAwMDAwMDAwMDAwM0wxOTkuMyAtNy4xMDAwMDAwMDAwMDAwMDA1UTIwMC4yMDAwMDAwMDAwMDAwMiAtNS44MDAwMDAwMDAwMDAwMDEgMjAxLjU1IC00LjEwMDAwMDAwMDAwMDAwMDVRMjAyLjkgLTIuNDAwMDAwMDAwMDAwMDAwNCAyMDQuNSAtMi4xVjAuMFEyMDIuNjAwMDAwMDAwMDAwMDIgLTAuMSAxOTguOTAwMDAwMDAwMDAwMDMgLTAuMjVRMTk1LjIwMDAwMDAwMDAwMDAyIC0wLjQgMTkxLjQgLTAuNFExODcuNCAtMC40IDE4My41IC0wLjI1UTE3OS42MDAwMDAwMDAwMDAwMiAtMC4xIDE3Ny42MDAwMDAwMDAwMDAwMiAwLjBWLTIuMVExNzkuNjAwMDAwMDAwMDAwMDIgLTIuMSAxODAuMzUwMDAwMDAwMDAwMDIgLTMuMFExODEuMTAwMDAwMDAwMDAwMDIgLTMuOTAwMDAwMDAwMDAwMDAwNCAxODAuMTAwMDAwMDAwMDAwMDIgLTUuNUwxNzAuMyAtMjAuM0wxNjkuNCAtMTkuMjAwMDAwMDAwMDAwMDAzUTE2Ni4xIC0xNS4wIDE2NS43IC0xMS4xNVExNjUuMyAtNy4zMDAwMDAwMDAwMDAwMDEgMTY3LjMgLTQuODAwMDAwMDAwMDAwMDAxUTE2OS4zIC0yLjMwMDAwMDAwMDAwMDAwMDMgMTcyLjggLTIuMFYwLjBRMTcwLjggLTAuMSAxNjcuNjAwMDAwMDAwMDAwMDIgLTAuMTUwMDAwMDAwMDAwMDAwMDJRMTY0LjQgLTAuMiAxNjEuMzUwMDAwMDAwMDAwMDIgLTAuMjVRMTU4LjMgLTAuMzAwMDAwMDAwMDAwMDAwMDQgMTU2LjUgLTAuMzAwMDAwMDAwMDAwMDAwMDRRMTU0LjMgLTAuMzAwMDAwMDAwMDAwMDAwMDQgMTUyLjc1IC0wLjI1UTE1MS4yMDAwMDAwMDAwMDAwMiAtMC4yIDE0OS44IDAuMFYtMi4wUTE1Mi40IC0zLjMwMDAwMDAwMDAwMDAwMDMgMTU0LjU1IC01LjI1UTE1Ni43MDAwMDAwMDAwMDAwMiAtNy4yIDE1OS4yMDAwMDAwMDAwMDAwMiAtMTAuMjAwMDAwMDAwMDAwMDAxTDE2OS4zIC0yMS44TDE1NC4wIC00NC44MDAwMDAwMDAwMDAwMDRRMTUyLjYgLTQ3LjAgMTUxLjQ1IC00OC4yNVExNTAuMyAtNDkuNSAxNDguOCAtNDkuODAwMDAwMDAwMDAwMDA0Vi01MS45MDAwMDAwMDAwMDAwMDZRMTUxLjAgLTUxLjgwMDAwMDAwMDAwMDAwNCAxNTUuMyAtNTEuNjUwMDAwMDAwMDAwMDA2UTE1OS42IC01MS41IDE2My45IC01MS41UTE2Ny40IC01MS41IDE3MC43IC01MS42NTAwMDAwMDAwMDAwMDZRMTc0LjAgLTUxLjgwMDAwMDAwMDAwMDAwNCAxNzUuNzAwMDAwMDAwMDAwMDIgLTUxLjkwMDAwMDAwMDAwMDAwNlogTTIxNS42MDAwMDAwMDAwMDAwMiAtNzIuMlEyMTguMjAwMDAwMDAwMDAwMDIgLTcyLjIgMjIwLjI1IC03MS4yNVEyMjIuMyAtNzAuMzAwMDAwMDAwMDAwMDEgMjIzLjUwMDAwMDAwMDAwMDAzIC02OC41UTIyNC42MDAwMDAwMDAwMDAwMiAtNjcuMTAwMDAwMDAwMDAwMDEgMjI1LjMgLTY0LjYwMDAwMDAwMDAwMDAxUTIyNi4wMDAwMDAwMDAwMDAwMyAtNjIuMTAwMDAwMDAwMDAwMDEgMjI2LjAwMDAwMDAwMDAwMDAzIC01OS4wMDAwMDAwMDAwMDAwMVEyMjYuMDAwMDAwMDAwMDAwMDMgLTU0LjAwMDAwMDAwMDAwMDAxIDIyMy40MDAwMDAwMDAwMDAwMyAtNDkuNTUwMDAwMDAwMDAwMDFRMjIwLjggLTQ1LjEwMDAwMDAwMDAwMDAxIDIxNS40MDAwMDAwMDAwMDAwMyAtNDIuNjAwMDAwMDAwMDAwMDFMMjE0LjUwMDAwMDAwMDAwMDAzIC00NC40MDAwMDAwMDAwMDAwMDZRMjE3LjEwMDAwMDAwMDAwMDAyIC00NS42MDAwMDAwMDAwMDAwMSAyMTkuMjAwMDAwMDAwMDAwMDIgLTQ3Ljg1MDAwMDAwMDAwMDAxUTIyMS4zIC01MC4xMDAwMDAwMDAwMDAwMSAyMjIuMDAwMDAwMDAwMDAwMDMgLTUyLjYwMDAwMDAwMDAwMDAxUTIyMi45MDAwMDAwMDAwMDAwMyAtNTUuNDAwMDAwMDAwMDAwMDA2IDIyMi4zIC01OC4xMDAwMDAwMDAwMDAwMVEyMTkuNzAwMDAwMDAwMDAwMDIgLTU1LjAwMDAwMDAwMDAwMDAxIDIxNS4wMDAwMDAwMDAwMDAwMyAtNTUuMDAwMDAwMDAwMDAwMDFRMjExLjAwMDAwMDAwMDAwMDAzIC01NS4wMDAwMDAwMDAwMDAwMSAyMDguNjAwMDAwMDAwMDAwMDIgLTU3LjI1MDAwMDAwMDAwMDAxUTIwNi4yMDAwMDAwMDAwMDAwMiAtNTkuNTAwMDAwMDAwMDAwMDEgMjA2LjIwMDAwMDAwMDAwMDAyIC02My42MDAwMDAwMDAwMDAwMVEyMDYuMjAwMDAwMDAwMDAwMDIgLTY3LjUgMjA4LjggLTY5Ljg1UTIxMS40MDAwMDAwMDAwMDAwMyAtNzIuMiAyMTUuNjAwMDAwMDAwMDAwMDIgLTcyLjJaIE0yNTEuNTAwMDAwMDAwMDAwMDMgLTUzLjMwMDAwMDAwMDAwMDAwNFEyNTUuOTAwMDAwMDAwMDAwMDMgLTUzLjMwMDAwMDAwMDAwMDAwNCAyNTkuMjUgLTUyLjM1MDAwMDAwMDAwMDAxUTI2Mi42IC01MS40MDAwMDAwMDAwMDAwMDYgMjY0LjEgLTUwLjZRMjY1LjcwMDAwMDAwMDAwMDA1IC00OS43IDI2Ni43MDAwMDAwMDAwMDAwNSAtNTAuMVEyNjguMDAwMDAwMDAwMDAwMDYgLTUwLjYgMjY4LjQwMDAwMDAwMDAwMDAzIC01My4ySDI3MC40MDAwMDAwMDAwMDAwM1EyNzAuMjAwMDAwMDAwMDAwMDUgLTUwLjMwMDAwMDAwMDAwMDAwNCAyNzAuMSAtNDYuMTUwMDAwMDAwMDAwMDA2UTI3MC4wMDAwMDAwMDAwMDAwNiAtNDIuMCAyNzAuMDAwMDAwMDAwMDAwMDYgLTM1LjJIMjY4LjAwMDAwMDAwMDAwMDA2UTI2Ny42IC0zOC45MDAwMDAwMDAwMDAwMDYgMjY2LjI1IC00Mi41UTI2NC45MDAwMDAwMDAwMDAwMyAtNDYuMSAyNjIuMzUgLTQ4LjVRMjU5LjggLTUwLjkwMDAwMDAwMDAwMDAwNiAyNTUuNzAwMDAwMDAwMDAwMDUgLTUwLjkwMDAwMDAwMDAwMDAwNlEyNTMuMjAwMDAwMDAwMDAwMDUgLTUwLjkwMDAwMDAwMDAwMDAwNiAyNTEuNTAwMDAwMDAwMDAwMDYgLTQ5LjQwMDAwMDAwMDAwMDAwNlEyNDkuODAwMDAwMDAwMDAwMDQgLTQ3LjkwMDAwMDAwMDAwMDAwNiAyNDkuODAwMDAwMDAwMDAwMDQgLTQ1LjMwMDAwMDAwMDAwMDAwNFEyNDkuODAwMDAwMDAwMDAwMDQgLTQyLjMwMDAwMDAwMDAwMDAwNCAyNTEuNjAwMDAwMDAwMDAwMDIgLTM5Ljk1UTI1My40MDAwMDAwMDAwMDAwMyAtMzcuNiAyNTYuMjAwMDAwMDAwMDAwMDUgLTM1LjQ1UTI1OS4wMDAwMDAwMDAwMDAwNiAtMzMuMzAwMDAwMDAwMDAwMDA0IDI2MS44IC0zMC45MDAwMDAwMDAwMDAwMDJRMjY0LjkwMDAwMDAwMDAwMDAzIC0yOC40MDAwMDAwMDAwMDAwMDIgMjY3LjMwMDAwMDAwMDAwMDA3IC0yNi4wUTI2OS43MDAwMDAwMDAwMDAwNSAtMjMuNiAyNzEuMTUwMDAwMDAwMDAwMDMgLTIwLjc1UTI3Mi42IC0xNy45MDAwMDAwMDAwMDAwMDIgMjcyLjYgLTE0LjBRMjcyLjYgLTkuNSAyNjkuODUgLTYuMFEyNjcuMSAtMi41IDI2Mi41NTAwMDAwMDAwMDAwNyAtMC41NDk5OTk5OTk5OTk5OTk5UTI1OC4wMDAwMDAwMDAwMDAwNiAxLjQwMDAwMDAwMDAwMDAwMDEgMjUyLjQwMDAwMDAwMDAwMDAzIDEuNDAwMDAwMDAwMDAwMDAwMVEyNDguOTAwMDAwMDAwMDAwMDMgMS40MDAwMDAwMDAwMDAwMDAxIDI0Ni4zMDAwMDAwMDAwMDAwNCAwLjY1UTI0My43MDAwMDAwMDAwMDAwNSAtMC4xIDI0Mi4xMDAwMDAwMDAwMDAwMiAtMS4xUTI0MC41MDAwMDAwMDAwMDAwMyAtMS45MDAwMDAwMDAwMDAwMDAxIDIzOS4zNTAwMDAwMDAwMDAwMiAtMi4zNVEyMzguMjAwMDAwMDAwMDAwMDUgLTIuODAwMDAwMDAwMDAwMDAwMyAyMzcuMTAwMDAwMDAwMDAwMDIgLTIuODAwMDAwMDAwMDAwMDAwM1EyMzYuMTAwMDAwMDAwMDAwMDIgLTIuODAwMDAwMDAwMDAwMDAwMyAyMzUuNDAwMDAwMDAwMDAwMDMgLTEuNzUwMDAwMDAwMDAwMDAwMlEyMzQuNzAwMDAwMDAwMDAwMDUgLTAuNzAwMDAwMDAwMDAwMDAwMSAyMzQuMzAwMDAwMDAwMDAwMDQgMC43MDAwMDAwMDAwMDAwMDAxSDIzMi4zMDAwMDAwMDAwMDAwNFEyMzIuNTAwMDAwMDAwMDAwMDMgLTIuNSAyMzIuNjAwMDAwMDAwMDAwMDIgLTcuMTAwMDAwMDAwMDAwMDAwNVEyMzIuNzAwMDAwMDAwMDAwMDUgLTExLjcwMDAwMDAwMDAwMDAwMSAyMzIuNzAwMDAwMDAwMDAwMDUgLTE5LjNIMjM0LjcwMDAwMDAwMDAwMDA1UTIzNS4zMDAwMDAwMDAwMDAwNCAtMTQuMCAyMzcuMDUwMDAwMDAwMDAwMDQgLTkuOVEyMzguODAwMDAwMDAwMDAwMDQgLTUuODAwMDAwMDAwMDAwMDAxIDI0MS41NTAwMDAwMDAwMDAwNCAtMy40NVEyNDQuMzAwMDAwMDAwMDAwMDQgLTEuMSAyNDcuOTAwMDAwMDAwMDAwMDMgLTEuMVEyNDkuNTAwMDAwMDAwMDAwMDMgLTEuMSAyNTAuOCAtMS43MDAwMDAwMDAwMDAwMDAyUTI1Mi4xMDAwMDAwMDAwMDAwMiAtMi4zMDAwMDAwMDAwMDAwMDAzIDI1Mi45MDAwMDAwMDAwMDAwMyAtMy41UTI1My43MDAwMDAwMDAwMDAwNSAtNC43IDI1My43MDAwMDAwMDAwMDAwNSAtNi42MDAwMDAwMDAwMDAwMDA1UTI1My43MDAwMDAwMDAwMDAwNSAtMTEuMCAyNTEuMDUwMDAwMDAwMDAwMDQgLTE0LjBRMjQ4LjQwMDAwMDAwMDAwMDAzIC0xNy4wIDI0NC40MDAwMDAwMDAwMDAwMyAtMjAuNlEyNDEuNDAwMDAwMDAwMDAwMDMgLTIzLjQwMDAwMDAwMDAwMDAwMiAyMzguNzUwMDAwMDAwMDAwMDMgLTI2LjA1MDAwMDAwMDAwMDAwNFEyMzYuMTAwMDAwMDAwMDAwMDIgLTI4LjcwMDAwMDAwMDAwMDAwMyAyMzQuNDAwMDAwMDAwMDAwMDMgLTMxLjg1UTIzMi43MDAwMDAwMDAwMDAwNSAtMzUuMCAyMzIuNzAwMDAwMDAwMDAwMDUgLTM4LjkwMDAwMDAwMDAwMDAwNlEyMzIuNzAwMDAwMDAwMDAwMDUgLTQzLjQwMDAwMDAwMDAwMDAwNiAyMzUuMzUwMDAwMDAwMDAwMDIgLTQ2LjYwMDAwMDAwMDAwMDAxUTIzOC4wMDAwMDAwMDAwMDAwMyAtNDkuODAwMDAwMDAwMDAwMDA0IDI0Mi4zIC01MS41NTAwMDAwMDAwMDAwMDRRMjQ2LjYwMDAwMDAwMDAwMDAyIC01My4zMDAwMDAwMDAwMDAwMDQgMjUxLjUwMDAwMDAwMDAwMDAzIC01My4zMDAwMDAwMDAwMDAwMDRaIiBmaWxsPSIjRThDOTdFIi8+Cjwvc3ZnPgo="></div>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" id="authBtn" onclick="authButton()">Admin-Login</button>
+    <button class="btn btn-accent btn-sm" onclick="openAddModal()">+ Neue Farbe</button>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="hero-tag">Filamente</div>
+    <h1>Filament-<em>Farben</em></h1>
+    <p>Farben, Materialien und HEX-Werte auf einen Blick.</p>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Farben</div></div>
+    <div class="stat"><div class="stat-value" id="statDual">0</div><div class="stat-label">Mehrfarbig</div></div>
+    <div class="stat"><div class="stat-value" id="statMat">0</div><div class="stat-label">Materialien</div></div>
+  </div>
+
+  <div class="section-header">
+    <h2>Alle Farben</h2>
+    <div class="filter-tabs" id="materialTabs"></div>
+  </div>
+  <input class="search" id="search" type="search" placeholder="Farbe, Material oder HEX suchen …" aria-label="Filamente suchen" />
+  <p class="status" id="status"></p>
+  <div class="grid" id="grid" aria-live="polite"></div>
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h3>🎨 Neue Farbe</h3>
+    <div class="modal-subtitle">Die Farbe wird in der Datenbank gespeichert.</div>
+    <div class="form">
+      <label for="newColor">Farbname</label>
+      <input type="text" id="newColor" placeholder="z. B. Signalrot" maxlength="60" autocomplete="off" />
+      <label for="newMaterial">Material</label>
+      <input type="text" id="newMaterial" list="materials" placeholder="z. B. PLA" maxlength="30" autocomplete="off" />
+      <datalist id="materials"></datalist>
+      <label for="newHex">Farbe</label>
+      <div class="color-row">
+        <input type="color" id="newPicker" value="#e8c97e" aria-label="Farbe wählen" />
+        <input type="text" id="newHex" value="#E8C97E" maxlength="7" aria-label="HEX-Wert" />
+      </div>
+      <label for="newCount">Anzahl Farben</label>
+      <select id="newCount">
+        <option value="1">Einfarbig</option>
+        <option value="2">Zweifarbig (Dual)</option>
+        <option value="3">Dreifarbig (Tri)</option>
+      </select>
+      <div class="color-row" id="dualPick" hidden>
+        <input type="color" id="newPicker2" value="#4aa3ff" aria-label="Zweite Farbe wählen" />
+        <input type="text" id="newHex2" value="#4AA3FF" maxlength="7" aria-label="Zweiter HEX-Wert" />
+      </div>
+      <div class="color-row" id="triPick" hidden>
+        <input type="color" id="newPicker3" value="#ff6b6b" aria-label="Dritte Farbe wählen" />
+        <input type="text" id="newHex3" value="#FF6B6B" maxlength="7" aria-label="Dritter HEX-Wert" />
+      </div>
+      <div class="form-err" id="addErr"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('addModal')">Abbrechen</button>
+      <button class="btn btn-accent" id="saveBtn" onclick="saveColor()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <h3>🔐 Admin-Login</h3>
+    <div class="modal-subtitle">Zum Hinzufügen und Löschen von Farben ist eine Anmeldung nötig.</div>
+    <div class="form">
+      <label for="loginEmail">E-Mail</label>
+      <input type="email" id="loginEmail" autocomplete="username" maxlength="120" />
+      <label for="loginPassword">Passwort</label>
+      <input type="password" id="loginPassword" autocomplete="current-password" />
+      <div class="form-err" id="loginErr"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="cancelLogin()">Abbrechen</button>
+      <button class="btn btn-accent" id="loginBtn" onclick="submitLogin()">Anmelden</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h3>Farbe löschen?</h3>
+    <p id="deleteText">Die Farbe wird unwiderruflich aus der Datenbank entfernt.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('deleteModal')">Behalten</button>
+      <button class="btn btn-danger" id="deleteBtn" onclick="confirmDelete()">Löschen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Nur das hier eintragen: deine Realtime-Database-URL ===== */
+const DATABASE_URL = "https://dshop-23436-default-rtdb.europe-west1.firebasedatabase.app/";
+
+/* Web-API-Key (öffentlich, kein Geheimnis). Das Passwort steht nirgends im Code. */
+const API_KEY = "AIzaSyCIIcYkkfytKxQjnfQnZnNmAnaBeL5mQUo";
+
+const PFAD = "filaments";      // Ordner in der Datenbank
+const AKTUALISIERUNG_SEK = 20; // automatisch neu laden
+
+const $ = id => document.getElementById(id);
+const baseUrl = () => DATABASE_URL.trim().replace(/\/+$/, "");
+let filaments = [], materialFilter = "";
+
+function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+function validHex(v) { return typeof v === "string" && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(v.trim()); }
+
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${type === 'success' ? '✓' : '!'}</span> ${escHtml(msg)}`;
+  $('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+function setStatus(text, isError) { $('status').textContent = text; $('status').className = 'status' + (isError ? ' error' : ''); }
+
+/* ===== Anzeige ===== */
+function cardHTML(item) {
+  const colors = [item.hex, item.hex2, item.hex3].filter(Boolean);
+  const n = colors.length;
+  const bg = n > 1
+    ? `linear-gradient(var(--dual-angle), ${colors.map((c, i) => `${c} ${i * 100 / n}% ${(i + 1) * 100 / n}%`).join(', ')})`
+    : item.hex;
+  const badges = [];
+  if (n > 1) badges.push(`<span class="badge badge-price">◐ ${n === 2 ? 'Dual' : 'Tri'}</span>`);
+  if (item.hidden) badges.push(`<span class="badge badge-hidden">🙈 Verdeckt</span>`);
+  return `<div class="card${item.hidden ? ' is-hidden' : ''}"><div class="swatch" style="background:${bg}"></div><div class="card-body">
+    <div class="card-category">${escHtml(item.material || 'Material unbekannt')}</div>
+    <div class="card-title">${escHtml(item.color)}</div>
+    ${badges.length ? `<div class="card-meta">${badges.join('')}</div>` : ''}
+    <div class="card-actions">
+      <button class="hide-link" data-hide="${escHtml(item.id)}">${item.hidden ? '👁 Einblenden' : '🙈 Verdecken'}</button>
+      <button class="cancel-link" data-del="${escHtml(item.id)}">✕ Löschen</button>
+    </div></div></div>`;
+}
+
+function renderTabs() {
+  const materials = [...new Set(filaments.map(f => f.material).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'de'));
+  if (materialFilter && !materials.includes(materialFilter)) materialFilter = '';
+  const wrap = $('materialTabs');
+  wrap.replaceChildren();
+  ['', ...materials].forEach(m => {
+    const b = document.createElement('button');
+    b.className = 'tab' + (m === materialFilter ? ' active' : '');
+    b.textContent = m || 'Alle';
+    b.onclick = () => { materialFilter = m; renderTabs(); render(); };
+    wrap.appendChild(b);
+  });
+  $('materials').replaceChildren(...materials.map(m => new Option(m)));
+}
+
+function render() {
+  const words = $('search').value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  const items = filaments.filter(f =>
+    (!materialFilter || f.material === materialFilter) &&
+    words.every(w => `${f.color} ${f.material} ${f.hex} ${f.hex2} ${f.hex3}`.toLowerCase().includes(w))
+  );
+  const grid = $('grid');
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🎨</div><h3>Keine Farben gefunden</h3><p>Versuche eine andere Suche.</p></div>`;
+    return;
+  }
+  const groups = {};
+  items.forEach(f => { const cat = f.material || 'Sonstiges'; (groups[cat] = groups[cat] || []).push(f); });
+  let html = '';
+  Object.keys(groups).sort((a, b) => a.localeCompare(b, 'de')).forEach(cat => {
+    html += `<div class="cat-section"><div class="cat-header"><span class="cat-label">${escHtml(cat)}</span><div class="cat-line"></div></div></div>`;
+    groups[cat].forEach(f => { html += cardHTML(f); });
+  });
+  grid.innerHTML = html;
+  grid.querySelectorAll('.card').forEach((c, i) => c.style.animationDelay = `${Math.min(i, 12) * 0.04}s`);
+}
+
+function updateStats() {
+  $('statTotal').textContent = filaments.length;
+  $('statDual').textContent = filaments.filter(f => f.hex2).length;
+  $('statMat').textContent = new Set(filaments.map(f => f.material).filter(Boolean)).size;
+}
+
+$('grid').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-del]');
+  if (btn) askDelete(btn.dataset.del);
+  const hideBtn = e.target.closest('button[data-hide]');
+  if (hideBtn) toggleHidden(hideBtn.dataset.hide);
+});
+$('search').addEventListener('input', render);
+
+/* ===== Anmeldung (Firebase Authentication per REST) ===== */
+const AUTH_STORE = 'filamentAdminSession';
+const LOGIN = 'LOGIN_NEEDED';
+let auth = null;          // { idToken, refreshToken, expiresAt, email }
+let refreshing = null;
+let pendingAction = null; // wird nach erfolgreichem Login ausgeführt
+
+function storeSession() {
+  try {
+    if (auth) localStorage.setItem(AUTH_STORE, JSON.stringify({ refreshToken: auth.refreshToken, email: auth.email }));
+    else localStorage.removeItem(AUTH_STORE);
+  } catch (e) {}
+}
+function authMessage(code = '') {
+  if (/INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD|EMAIL_NOT_FOUND/.test(code)) return 'E-Mail oder Passwort ist falsch.';
+  if (/TOO_MANY_ATTEMPTS/.test(code)) return 'Zu viele Versuche. Bitte später erneut versuchen.';
+  if (/USER_DISABLED/.test(code)) return 'Dieses Konto ist deaktiviert.';
+  if (/INVALID_EMAIL/.test(code)) return 'Die E-Mail-Adresse ist ungültig.';
+  return 'Anmeldung fehlgeschlagen' + (code ? ' (' + code + ')' : '') + '.';
+}
+async function signIn(email, password) {
+  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, returnSecureToken: true })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.idToken) throw new Error(authMessage(data?.error?.message));
+  auth = {
+    idToken: data.idToken,
+    refreshToken: data.refreshToken,
+    expiresAt: Date.now() + (Number(data.expiresIn) || 3600) * 1000 - 60000,
+    email: data.email || email
+  };
+  storeSession();
+  updateAuthUI();
+}
+function refreshAuth() {
+  if (!auth || !auth.refreshToken) return Promise.reject(new Error(LOGIN));
+  if (!refreshing) {
+    refreshing = (async () => {
+      const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: auth.refreshToken })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.id_token) throw new Error(LOGIN);
+      auth.idToken = data.id_token;
+      auth.refreshToken = data.refresh_token || auth.refreshToken;
+      auth.expiresAt = Date.now() + (Number(data.expires_in) || 3600) * 1000 - 60000;
+      storeSession();
+      return auth.idToken;
+    })().finally(() => { refreshing = null; });
+  }
+  return refreshing;
+}
+async function getToken() {
+  if (!auth) return null;
+  if (Date.now() >= auth.expiresAt) {
+    try { await refreshAuth(); } catch (e) { logout(true); return null; }
+  }
+  return auth ? auth.idToken : null;
+}
+function logout(silent) {
+  auth = null; storeSession(); updateAuthUI();
+  if (!silent) toast('Abgemeldet.');
+}
+function restoreSession() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(AUTH_STORE) || 'null');
+    if (saved && saved.refreshToken) auth = { idToken: '', refreshToken: saved.refreshToken, expiresAt: 0, email: saved.email || '' };
+  } catch (e) {}
+  updateAuthUI();
+}
+function updateAuthUI() {
+  $('authBtn').textContent = auth ? 'Abmelden' : 'Admin-Login';
+  $('authBtn').title = auth ? 'Angemeldet als ' + auth.email : '';
+}
+function authButton() {
+  if (auth) { logout(); return; }
+  pendingAction = null;
+  openLoginModal();
+}
+function loginError(text) { $('loginErr').textContent = text; $('loginErr').classList.add('visible'); }
+function openLoginModal(msg) {
+  $('loginErr').classList.remove('visible');
+  if (msg) loginError(msg);
+  openModal('loginModal');
+  setTimeout(() => $($('loginEmail').value ? 'loginPassword' : 'loginEmail').focus(), 200);
+}
+function cancelLogin() { pendingAction = null; closeModal('loginModal'); }
+async function submitLogin() {
+  const email = $('loginEmail').value.trim();
+  const password = $('loginPassword').value;
+  if (!email || !password) return loginError('Bitte E-Mail und Passwort eingeben.');
+  $('loginBtn').disabled = true;
+  try {
+    await signIn(email, password);
+    $('loginPassword').value = '';
+    closeModal('loginModal');
+    toast('Angemeldet als ' + auth.email);
+    const action = pendingAction;
+    pendingAction = null;
+    if (action) action();
+  } catch (error) {
+    loginError(error.message);
+  } finally {
+    $('loginBtn').disabled = false;
+  }
+}
+
+/* ===== Datenbank (nur /filaments) ===== */
+async function dbRequest(method, body, needAuth) {
+  const send = token => fetch(`${baseUrl()}/${PFAD}.json` + (token ? `?auth=${encodeURIComponent(token)}` : ''), {
+    method,
+    ...(body !== undefined ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {})
+  });
+  let token = await getToken();
+  if (needAuth && !token) throw new Error(LOGIN);
+  let res = await send(token);
+  if (res.status === 401 && token) {               // Token abgelaufen? Einmal erneuern.
+    try { token = await refreshAuth(); res = await send(token); }
+    catch (e) { if (needAuth) { logout(true); throw new Error(LOGIN); } }
+    if (!needAuth && res.status === 401) res = await send(null); // Lesen ist öffentlich
+  }
+  return res;
+}
+async function readEntries() {
+  const res = await dbRequest('GET', undefined, false);
+  if (res.status === 401 || res.status === 403) throw new Error('Zugriff verweigert. In den Firebase-Regeln muss Lesen für „' + PFAD + '“ erlaubt sein.');
+  if (!res.ok) throw new Error('Serverantwort ' + res.status);
+  const data = await res.json() || {};
+  const pairs = Array.isArray(data) ? data.map((v, i) => [String(i), v]) : Object.entries(data);
+  return pairs.filter(([, v]) => v && typeof v === 'object');
+}
+async function writeList(values) {
+  const res = await dbRequest('PUT', values, true);
+  if (res.status === 401 || res.status === 403) throw new Error('Keine Berechtigung zum Schreiben. Bitte mit dem Admin-Konto anmelden.');
+  if (!res.ok) throw new Error('Serverantwort ' + res.status);
+}
+
+/* ===== Laden ===== */
+async function load() {
+  const base = baseUrl();
+  if (!/^https:\/\/.+/.test(base)) { setStatus('Trage oben im Code bei DATABASE_URL deine Datenbank-URL ein.', true); return false; }
+  try {
+    const entries = await readEntries();
+    filaments = entries.map(([id, value]) => {
+      const codes = [value?.hex, value?.hex2, value?.hex3]
+        .filter(v => typeof v === 'string')
+        .flatMap(v => v.match(/#(?:[0-9a-f]{6}|[0-9a-f]{3})\b/gi) || [])
+        .map(h => h.toUpperCase())
+        .slice(0, 3);
+      return {
+        id,
+        color: typeof value?.color === 'string' ? value.color : id,
+        hex: codes[0] || '',
+        hex2: codes[1] || '',
+        hex3: codes[2] || '',
+        material: typeof value?.material === 'string' ? value.material : '',
+        hidden: value?.hidden === true
+      };
+    }).filter(f => f.hex).sort((a, b) => a.color.localeCompare(b.color, 'de'));
+    setStatus(filaments.length ? '' : 'Noch keine Farben vorhanden.');
+    renderTabs(); render(); updateStats();
+    return true;
+  } catch (error) {
+    setStatus('Fehler beim Laden: ' + error.message, true);
+    return false;
+  }
+}
+
+/* ===== Neue Farbe ===== */
+function openModal(id) { $(id).classList.add('visible'); }
+function closeModal(id) { $(id).classList.remove('visible'); }
+function openAddModal() {
+  if (!auth) { pendingAction = openAddModal; openLoginModal(); return; }
+  $('addErr').classList.remove('visible'); openModal('addModal'); setTimeout(() => $('newColor').focus(), 200); }
+function addError(text) { $('addErr').textContent = text; $('addErr').classList.add('visible'); }
+
+function bindPair(pickerId, hexId) {
+  $(pickerId).addEventListener('input', () => { $(hexId).value = $(pickerId).value.toUpperCase(); });
+  $(hexId).addEventListener('input', () => { const v = $(hexId).value.trim(); if (/^#[0-9a-f]{6}$/i.test(v)) $(pickerId).value = v; });
+}
+bindPair('newPicker', 'newHex');
+bindPair('newPicker2', 'newHex2');
+bindPair('newPicker3', 'newHex3');
+$('newCount').addEventListener('change', () => {
+  const n = Number($('newCount').value);
+  $('dualPick').hidden = n < 2;
+  $('triPick').hidden = n < 3;
+});
+
+async function saveColor() {
+  const color = $('newColor').value.trim();
+  const material = $('newMaterial').value.trim();
+  let hex = $('newHex').value.trim().toUpperCase();
+  if (hex && !hex.startsWith('#')) hex = '#' + hex;
+  const count = Number($('newCount').value);
+  const fix = v => { v = v.trim().toUpperCase(); return v && !v.startsWith('#') ? '#' + v : v; };
+  const hex2 = count >= 2 ? fix($('newHex2').value) : '';
+  const hex3 = count >= 3 ? fix($('newHex3').value) : '';
+
+  if (!color) return addError('Bitte einen Farbnamen eingeben.');
+  if (!validHex(hex)) return addError('Der HEX-Wert ist ungültig (z. B. #FF8800).');
+  if (count >= 2 && !validHex(hex2)) return addError('Der zweite HEX-Wert ist ungültig.');
+  if (count >= 3 && !validHex(hex3)) return addError('Der dritte HEX-Wert ist ungültig.');
+  if (filaments.some(f => f.color.toLowerCase() === color.toLowerCase() && f.material === material)) return addError('Diese Farbe gibt es mit diesem Material schon.');
+  const base = baseUrl();
+  if (!/^https:\/\/.+/.test(base)) return addError('DATABASE_URL fehlt im Code.');
+
+  $('addErr').classList.remove('visible');
+  $('saveBtn').disabled = true;
+  try {
+    const entries = await readEntries();
+    const values = entries.map(([, v]) => v);
+    values.push({ color, material, hex, ...(hex2 ? { hex2 } : {}), ...(hex3 ? { hex3 } : {}) });
+    await writeList(values);
+    $('newColor').value = '';
+    closeModal('addModal');
+    toast(`„${color}“ gespeichert.`, 'success');
+    await load();
+  } catch (error) {
+    if (error.message === LOGIN) { closeModal('addModal'); pendingAction = openAddModal; openLoginModal('Sitzung abgelaufen. Bitte erneut anmelden.'); }
+    else addError('Fehler beim Speichern: ' + error.message);
+  } finally {
+    $('saveBtn').disabled = false;
+  }
+}
+
+/* ===== Verdecken / Einblenden ===== */
+// Verdeckte Filamente bleiben in der Datenbank (Feld "hidden"), werden im Shop aber nicht zur Auswahl angeboten.
+async function toggleHidden(id) {
+  if (!auth) { pendingAction = () => toggleHidden(id); openLoginModal(); return; }
+  const f = filaments.find(x => x.id === id);
+  if (!f) return;
+  try {
+    const entries = await readEntries();   // aktuelle Liste, damit nichts überschrieben wird
+    let idx = entries.findIndex(([k, v]) => k === id && v.color === f.color);
+    if (idx < 0) idx = entries.findIndex(([, v]) => v.color === f.color && (v.material || '') === f.material);
+    if (idx < 0) { toast('Die Farbe ist nicht mehr vorhanden.', 'error'); await load(); return; }
+    const values = entries.map(([, v]) => v);
+    const { hidden, ...rest } = values[idx];
+    const nowHidden = hidden !== true;
+    values[idx] = nowHidden ? { ...rest, hidden: true } : rest;
+    await writeList(values);
+    toast(nowHidden ? `„${f.color}“ ist jetzt verdeckt.` : `„${f.color}“ ist wieder sichtbar.`, 'success');
+    await load();
+  } catch (error) {
+    if (error.message === LOGIN) { pendingAction = () => toggleHidden(id); openLoginModal('Sitzung abgelaufen. Bitte erneut anmelden.'); }
+    else toast(error.message, 'error');
+  }
+}
+
+/* ===== Löschen ===== */
+let deleteId = null;
+function askDelete(id) {
+  if (!auth) { pendingAction = () => askDelete(id); openLoginModal(); return; }
+  const f = filaments.find(x => x.id === id);
+  if (!f) return;
+  deleteId = id;
+  $('deleteText').textContent = `„${f.color}${f.material ? ' – ' + f.material : ''}“ wird unwiderruflich aus der Datenbank entfernt.`;
+  openModal('deleteModal');
+}
+async function confirmDelete() {
+  if (!deleteId) return;
+  const id = deleteId;
+  const f = filaments.find(x => x.id === id);
+  $('deleteBtn').disabled = true;
+  try {
+    const entries = await readEntries();   // aktuelle Liste, damit nichts überschrieben wird
+    let idx = entries.findIndex(([k, v]) => k === id && f && v.color === f.color);
+    if (idx < 0 && f) idx = entries.findIndex(([, v]) => v.color === f.color && (v.material || '') === f.material);
+    closeModal('deleteModal');
+    deleteId = null;
+    if (idx < 0) { toast('Die Farbe ist nicht mehr vorhanden.', 'error'); await load(); return; }
+    await writeList(entries.filter((_, i) => i !== idx).map(([, v]) => v));
+    toast('Farbe gelöscht.', 'success');
+    await load();
+  } catch (error) {
+    closeModal('deleteModal');
+    if (error.message === LOGIN) { pendingAction = () => askDelete(id); openLoginModal('Sitzung abgelaufen. Bitte erneut anmelden.'); }
+    else toast(error.message, 'error');
+  } finally {
+    $('deleteBtn').disabled = false;
+  }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('visible'); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.visible').forEach(m => m.classList.remove('visible')); });
+$('newColor').addEventListener('keydown', e => { if (e.key === 'Enter') saveColor(); });
+['loginEmail', 'loginPassword'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') submitLogin(); }));
+
+restoreSession();
+load().then(ok => { if (ok) setInterval(load, AKTUALISIERUNG_SEK * 1000); });
+</script>
+</body>
+</html>
