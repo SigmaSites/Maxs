@@ -252,7 +252,13 @@ const AKTUALISIERUNG_SEK = 20; // automatisch neu laden
 
 const $ = id => document.getElementById(id);
 const baseUrl = () => DATABASE_URL.trim().replace(/\/+$/, "");
-let filaments = [], materialFilter = "";
+let filaments = [], materialFilter = "", loaded = false;
+// Verdeckte Farben sehen nur angemeldete Admins; alle anderen bekommen sie gar nicht angezeigt.
+function shown() { return auth ? filaments : filaments.filter(f => !f.hidden); }
+function refreshView() {
+  setStatus(shown().length ? '' : 'Noch keine Farben vorhanden.');
+  renderTabs(); render(); updateStats();
+}
 
 function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
 function validHex(v) { return typeof v === "string" && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(v.trim()); }
@@ -287,7 +293,7 @@ function cardHTML(item) {
 }
 
 function renderTabs() {
-  const materials = [...new Set(filaments.map(f => f.material).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'de'));
+  const materials = [...new Set(shown().map(f => f.material).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'de'));
   if (materialFilter && !materials.includes(materialFilter)) materialFilter = '';
   const wrap = $('materialTabs');
   wrap.replaceChildren();
@@ -303,7 +309,7 @@ function renderTabs() {
 
 function render() {
   const words = $('search').value.toLowerCase().trim().split(/\s+/).filter(Boolean);
-  const items = filaments.filter(f =>
+  const items = shown().filter(f =>
     (!materialFilter || f.material === materialFilter) &&
     words.every(w => `${f.color} ${f.material} ${f.hex} ${f.hex2} ${f.hex3}`.toLowerCase().includes(w))
   );
@@ -324,9 +330,9 @@ function render() {
 }
 
 function updateStats() {
-  $('statTotal').textContent = filaments.length;
-  $('statDual').textContent = filaments.filter(f => f.hex2).length;
-  $('statMat').textContent = new Set(filaments.map(f => f.material).filter(Boolean)).size;
+  $('statTotal').textContent = shown().length;
+  $('statDual').textContent = shown().filter(f => f.hex2).length;
+  $('statMat').textContent = new Set(shown().map(f => f.material).filter(Boolean)).size;
 }
 
 $('grid').addEventListener('click', e => {
@@ -415,6 +421,7 @@ function restoreSession() {
 function updateAuthUI() {
   $('authBtn').textContent = auth ? 'Abmelden' : 'Admin-Login';
   $('authBtn').title = auth ? 'Angemeldet als ' + auth.email : '';
+  if (loaded) refreshView();   // verdeckte Farben je nach Anmeldung ein- bzw. ausblenden
 }
 function authButton() {
   if (auth) { logout(); return; }
@@ -501,8 +508,8 @@ async function load() {
         hidden: value?.hidden === true
       };
     }).filter(f => f.hex).sort((a, b) => a.color.localeCompare(b.color, 'de'));
-    setStatus(filaments.length ? '' : 'Noch keine Farben vorhanden.');
-    renderTabs(); render(); updateStats();
+    loaded = true;
+    refreshView();
     return true;
   } catch (error) {
     setStatus('Fehler beim Laden: ' + error.message, true);
