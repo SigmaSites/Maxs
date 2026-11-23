@@ -122,13 +122,13 @@
     .cat-line { flex: 1; height: 1px; background: var(--border); }
     /* LOGO */
     .logo { display: flex; align-items: center; gap: 0.7rem; }
-    .logo-img { height: 24px; width: auto; display: block; }
-    @media (max-width: 480px) { .logo-img { height: 20px; } }
+    /* Logotype.png ist 356×100 px, der Schriftzug sitzt aber nur oben links (85×24 px). Hier wird genau dieser Ausschnitt gezeigt. */
+    .logo-img { width: 85px; height: 24px; flex: none; object-fit: none; object-position: 0 0; display: block; }
   </style>
 </head>
 <body>
 <header>
-  <div class="logo"><img class="logo-img" alt="Max's" src="https://sigmasites.github.io/Maxs/assets/icon/Logotype.png"<</div>
+  <div class="logo"><img class="logo-img" alt="Max's" src="assets/icon/Logotype.png" width="356" height="100"></div>
   <div class="my-name-tag" onclick="openNameModal(false)" title="Namen ändern">
     <span class="name-label">Mein Name:</span>
     <span class="name-val" id="headerName">–</span>
